@@ -138,6 +138,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="FCB.h" />
     <ClInclude Include="file.h" />
     <ClInclude Include="fs.h" />
     <ClInclude Include="kernelFile.h" />
@@ -147,6 +148,7 @@
     <ClInclude Include="sem.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="FCB.cpp" />
     <ClCompile Include="file.cpp" />
     <ClCompile Include="fs.cpp" />
     <ClCompile Include="kernelFile.cpp" />

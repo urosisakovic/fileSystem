@@ -1,21 +1,18 @@
 #include "kernelFS.h"
 
-char KernelFS::mount(Partition* partition)
-{
+char KernelFS::mount(Partition* partition) {
 	mountSem->wait();
 	p = partition;
 }
 
-char KernelFS::unmount()
-{
+char KernelFS::unmount() {
 	allFilesClosed->wait();
 	p = nullptr;
 	mountSem->signal();
 	allFilesClosed->signal();
 }
 
-char KernelFS::format()
-{
+char KernelFS::format() {
 	allFilesClosed->wait();
 
 	// set bit vector to all zeros
@@ -28,13 +25,11 @@ char KernelFS::format()
 	allFilesClosed->signal();
 }
 
-FileCnt KernelFS::readRootDir()
-{
+FileCnt KernelFS::readRootDir() {
 	return FileCnt();
 }
 
-char KernelFS::doesExist(char* fname)
-{
+char KernelFS::doesExist(char* fname) {
 	bool exists = false;
 	// search directory index for it
 	// ...
@@ -42,12 +37,11 @@ char KernelFS::doesExist(char* fname)
 	return exists;
 }
 
-File* KernelFS::open(char* fname, char mode)
-{
-	return nullptr;
+File* KernelFS::open(char* fname, char mode) {
+	if (!doesExist(fname))
+		return nullptr;
 }
 
-char KernelFS::deleteFile(char* fname)
-{
+char KernelFS::deleteFile(char* fname) {
 	return 0;
 }

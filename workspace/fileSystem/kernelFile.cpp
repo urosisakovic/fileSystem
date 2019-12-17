@@ -4,17 +4,17 @@ KernelFile::~KernelFile()
 {
 }
 
-char KernelFile::write(BytesCnt, char* buffer)
+char KernelFile::write(BytesCnt bytesCnt, char* buffer)
 {
 	return 0;
 }
 
-BytesCnt KernelFile::read(BytesCnt, char* buffer)
+BytesCnt KernelFile::read(BytesCnt bytesCnt, char* buffer)
 {
 	return BytesCnt();
 }
 
-char KernelFile::seek(BytesCnt)
+char KernelFile::seek(BytesCnt bytesCnt)
 {
 	return 0;
 }

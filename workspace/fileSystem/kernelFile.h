@@ -1,9 +1,10 @@
 #pragma once
 
+class FCB;
+
 typedef unsigned BytesCnt;
 
-class KernelFile
-{
+class KernelFile{
 public:
 	~KernelFile(); //zatvaranje fajla   
 	char write(BytesCnt, char* buffer);
@@ -13,5 +14,7 @@ public:
 	char eof();
 	BytesCnt getFileSize();
 	char truncate();
+private:
+	FCB *fcb;
 };
 
