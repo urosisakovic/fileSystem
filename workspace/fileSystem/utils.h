@@ -1,6 +1,7 @@
 
 typedef unsigned long ClusterNo;
-const unsigned long ClusterSize = 2048;
+const unsigned long CLUSTER_SIZE = 2048;
+const unsigned long BITS_PER_CLUSTER = CLUSTER_SIZE * 8;
 
 typedef unsigned char rootDirEntry[20];
 

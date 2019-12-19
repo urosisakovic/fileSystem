@@ -8,32 +8,64 @@ class File;
 
 class KernelFS {
 public:
-    KernelFS();
-    ~KernelFS();
+    // allocate space for clusterBuffer
+    KernelFS(); 
 
-    static char mount(Partition* partition); //montira particiju   
-                // vraca 0 u slucaju neuspeha ili 1 u slucaju uspeha   
-    static char unmount();  //demontira particiju
-                // vraca 0 u slucaju neuspeha ili 1 u slucaju uspeha
-    static char format(); //formatira particiju;               
-                // vraca 0 u slucaju neuspeha ili 1 u slucaju uspeha 
+    // returns 1 for success and 0 for failure
+    static char mount(Partition* partition); 
 
+    // returns 1 for success and 0 for failure
+    static char unmount();  
+
+    // returns 1 for success and 0 for failure
+    static char format(); 
+
+    // returns number of files for success and -1 for failure
     static FileCnt readRootDir();
-    // vraca -1 u slucaju neuspeha ili broj fajlova u slucaju uspeha  
-
-    static char doesExist(char* fname); //argument je naziv fajla sa                                        
-                                        //apsolutnom putanjom    
-
+    
+    // fname is aboslute filepath of a file
+    // returns 1 if such a file exists, 0 otherwise
+    static char doesExist(char* fname); 
+    
+    // description
     static File* open(char* fname, char mode);
+
+    // description
     static char deleteFile(char* fname);
+
+    // deallocate space for clusterBuffer
+    ~KernelFS();
 private:
-    static Semaphore* mountSem;
-    static Semaphore* allFilesClosed;
+    // pointer to a Partition object which abstracts
+    // Windows 10 x64 API towards hard disk
     static Partition* partition;
-    static char *bitVector;
-    static int bitVectorSize;
-    static ClusterNo rootDirLvl1Index;
+
+    // number of clusters in partition
+    // equal to partition.getNumOfClusters()
     static ClusterNo clusterCount;
+
+    static char *bitVector;
+    // byte size of bit vector
+    static int bitVectorByteSize;
+    // cluster size of bit vector
+    static ClusterNo bitVectorClusterSize;
+
+    // sets corresponding bit in bit vector
+    static void markAllocated(ClusterNo);
+    // clears corresponding bit in bit vector
+    static void markDeallocated(ClusterNo);
+
+    // number of cluster containing level 1 index of root directory
+    // equal to bitVectorClusterCount
+    static ClusterNo rootDirLvl1Index;
+    
+    // buffer with the size equal to one cluster
+    // used to read a cluster into it or write a cluster from it
     static char* clusterBuffer;
-    static ClusterNo bitVectorClusterCount;
+    
+    // blocks all thread which try to mount a partition while there is
+    // already one mounted
+    static Semaphore* mountSem;
+    // blocks unmounting and formatting if there are open files
+    static Semaphore* allFilesClosed;
 };
