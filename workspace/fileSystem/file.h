@@ -1,7 +1,7 @@
 #pragma once
 #include "kernelFile.h"
+#include "kernelFS.h"
 
-class KernelFile; 
 
 class File {
 public:   

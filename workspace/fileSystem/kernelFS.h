@@ -1,8 +1,11 @@
 #pragma once
 #include <string.h>
+#include <unordered_map>
+#include <string>
 #include "sem.h"
 #include "part.h"
 #include "utils.h"
+#include "file.h"
 
 class File;
 
@@ -79,4 +82,6 @@ private:
     static Semaphore* mountSem;
     // blocks unmounting and formatting if there are open files
     static Semaphore* allFilesClosed;
+
+    static std::unordered_map<std::string, File*> openFiles;
 };

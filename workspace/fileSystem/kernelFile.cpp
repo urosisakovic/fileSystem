@@ -1,8 +1,7 @@
 #include "kernelFile.h"
 
-KernelFile::KernelFile(Partition *p, KernelFS* kfs, ClusterNo rootDirCluster, ClusterNo rootDirEntry, ClusterNo lvl1IndexCluster, ClusterNo lvl2IndexCluster, ClusterNo dataCluster) {
+KernelFile::KernelFile(Partition *p, ClusterNo rootDirCluster, ClusterNo rootDirEntry, ClusterNo lvl1IndexCluster, ClusterNo lvl2IndexCluster, ClusterNo dataCluster) {
 	this->partition = p;
-	this->kernelFS = kfs;
 	this->rootDirCluster = rootDirCluster;
 
 	this->rootDirEntry = rootDirEntry;
@@ -94,12 +93,12 @@ char KernelFile::truncate() {
 			if (*lvl2Ptr == 0)
 				continue;
 
-			kernelFS->deallocateCluster(*lvl2Ptr);
+			KernelFS::deallocateCluster(*lvl2Ptr);
 		}
 
-		kernelFS->deallocateCluster(*lvl1Ptr);
+		KernelFS::deallocateCluster(*lvl1Ptr);
 		*lvl1Ptr = 0;
 	}
 
-	kernelFS->setLength(rootDirCluster, rootDirEntry, 0);
+	KernelFS::setLength(rootDirCluster, rootDirEntry, 0);
 }

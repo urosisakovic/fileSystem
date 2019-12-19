@@ -220,6 +220,15 @@ File* KernelFS::open(char* fname, char mode) {
 		if (doesExist(fname))
 			deleteFile(fname);
 
+		// allocate root dir lvl 1 entry
+		// allocate root dir lvl 2 entry
+
+
+		File* f = new File();
+		KernelFile* kf = new KernelFile(partition, 0, 0, 0, 0, 0);
+
+		openFiles[fname] = f;
+
 		// create new file
 	}
 	if (mode == 'a') {

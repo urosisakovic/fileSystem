@@ -5,7 +5,7 @@
 
 class KernelFile{
 public:
-	KernelFile(Partition*, KernelFS*, ClusterNo, ClusterNo, ClusterNo, ClusterNo, ClusterNo);
+	KernelFile(Partition*, ClusterNo, ClusterNo, ClusterNo, ClusterNo, ClusterNo);
 	~KernelFile(); //zatvaranje fajla   
 	char write(BytesCnt, char*);
 	BytesCnt read(BytesCnt, char*);
@@ -24,6 +24,5 @@ private:
 	unsigned position;
 	char* clusterBuffer;
 	Partition *partition;
-	KernelFS* kernelFS;
 };
 
