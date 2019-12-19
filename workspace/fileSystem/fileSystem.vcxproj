@@ -138,17 +138,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="FCB.h" />
     <ClInclude Include="file.h" />
     <ClInclude Include="fs.h" />
     <ClInclude Include="kernelFile.h" />
     <ClInclude Include="kernelFS.h" />
     <ClInclude Include="part.h" />
-    <ClInclude Include="partitionImpl.h" />
     <ClInclude Include="sem.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FCB.cpp" />
     <ClCompile Include="file.cpp" />
     <ClCompile Include="fs.cpp" />
     <ClCompile Include="kernelFile.cpp" />

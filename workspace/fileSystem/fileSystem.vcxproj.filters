@@ -24,9 +24,6 @@
     <ClInclude Include="file.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="partitionImpl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="kernelFS.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -36,7 +33,7 @@
     <ClInclude Include="kernelFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FCB.h">
+    <ClInclude Include="utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -54,9 +51,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="kernelFile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FCB.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,7 +1,5 @@
 #pragma once
-
-typedef unsigned long ClusterNo;
-const unsigned long ClusterSize = 2048;
+#include "utils.h"
 
 class PartitionImpl;
 
