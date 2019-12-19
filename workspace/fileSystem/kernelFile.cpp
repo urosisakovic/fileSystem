@@ -1,18 +1,21 @@
 #include "kernelFile.h"
 
-KernelFile::KernelFile(Partition *p, ClusterNo lvl1IndexCluster, ClusterNo lvl2IndexCluster, ClusterNo dataCluster) {
-	this->part = p;
-	
+KernelFile::KernelFile(Partition *p, KernelFS* kfs, ClusterNo rootDirCluster, ClusterNo rootDirEntry, ClusterNo lvl1IndexCluster, ClusterNo lvl2IndexCluster, ClusterNo dataCluster) {
+	this->partition = p;
+	this->kernelFS = kfs;
+	this->rootDirCluster = rootDirCluster;
+
+	this->rootDirEntry = rootDirEntry;
 	this->lvl1IndexCluster = lvl1IndexCluster;
 	this->lvl2IndexCluster = lvl2IndexCluster;
 	this->dataCluster = dataCluster;
 	this->position = 0;
 
-	privateBuffer = new char[CLUSTER_SIZE];
+	clusterBuffer = new char[CLUSTER_SIZE];
 }
 
 KernelFile::~KernelFile() {
-	delete[] privateBuffer;
+	delete[] clusterBuffer;
 }
 
 char KernelFile::write(BytesCnt bytesCnt, char* buffer) {
@@ -23,10 +26,10 @@ char KernelFile::write(BytesCnt bytesCnt, char* buffer) {
 	int readPtr = 0;
 
 	// write first cluster
-	part->readCluster(dataCluster, privateBuffer);
+	partition->readCluster(dataCluster, clusterBuffer);
 	for (; readPtr < bytesInCurrentCluster; readPtr++)
-		privateBuffer[position++] = buffer[readPtr];
-	part->writeCluster(dataCluster, privateBuffer);
+		clusterBuffer[position++] = buffer[readPtr];
+	partition->writeCluster(dataCluster, clusterBuffer);
 
 	// write full clusters
 	for (int i = 0; i < fullClusterCnt; i++) {
@@ -72,7 +75,31 @@ BytesCnt KernelFile::getFileSize() {
 }
 
 char KernelFile::truncate() {
-	// deallocate all dataClusters, lvl1IndexClusters and lvl2IndexClusters 
-	// update corresponding entry in root dir
-	return 0;
+	partition->readCluster(lvl1IndexCluster, clusterBuffer);
+
+	char additionalBuffer[CLUSTER_SIZE];
+
+	ClusterNo *lvl1Ptr, *lvl2Ptr;
+	for (ClusterNo i = 0; i < ENTRIES_PER_INDEX; i++) {
+		lvl1Ptr = (ClusterNo*)clusterBuffer + i;
+
+		if (*lvl1Ptr == 0)
+			continue;
+
+		partition->readCluster(*lvl1Ptr, additionalBuffer);
+
+		for (ClusterNo j = 0; j < ENTRIES_PER_INDEX; j++) {
+			lvl2Ptr = (ClusterNo*)additionalBuffer + j;
+
+			if (*lvl2Ptr == 0)
+				continue;
+
+			kernelFS->deallocateCluster(*lvl2Ptr);
+		}
+
+		kernelFS->deallocateCluster(*lvl1Ptr);
+		*lvl1Ptr = 0;
+	}
+
+	kernelFS->setLength(rootDirCluster, rootDirEntry, 0);
 }

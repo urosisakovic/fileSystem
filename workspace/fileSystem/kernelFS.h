@@ -35,6 +35,15 @@ public:
 
     // deallocate space for clusterBuffer
     ~KernelFS();
+
+    // returns number of allocated cluster in case of success
+    // otherwise, returns 0 (cannot be allocated since bit vector is there)
+    static ClusterNo allocateCluster();
+
+    // returns 1 in case of success, 0 otherwise
+    static char deallocateCluster(ClusterNo);
+
+    static char setLength(ClusterNo, ClusterNo, unsigned);
 private:
     // pointer to a Partition object which abstracts
     // Windows 10 x64 API towards hard disk
@@ -54,6 +63,8 @@ private:
     static void markAllocated(ClusterNo);
     // clears corresponding bit in bit vector
     static void markDeallocated(ClusterNo);
+    // returns 1 if cluster is allocated, 0 if it is free and -1 in case of an error
+    static char checkAllocated(ClusterNo);
 
     // number of cluster containing level 1 index of root directory
     // equal to bitVectorClusterCount

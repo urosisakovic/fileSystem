@@ -1,5 +1,9 @@
 #include "kernelFS.h"
+#include <iostream>
 // TODO: Check if any readCluster return -1
+// TODO: Use bool instead of char
+// TODO: Use inline functions
+// TODO: Where to close a file?
 
 // initialize static variables
 Partition* KernelFS::partition = nullptr;
@@ -80,7 +84,7 @@ char KernelFS::format() {
 	for (int i = 0; i < 7; i++)
 		allSet += 1 << i;
 
-	for (int i = 0; i < bitVectorByteSize; bitVector[i] = allSet);
+	for (int i = 0; i < bitVectorByteSize; bitVector[i++] = allSet);
 	for (int i = 0; i < bitVectorClusterSize; i++)
 		markAllocated(i);
 	markAllocated(rootDirLvl1Index);
@@ -93,7 +97,7 @@ char KernelFS::format() {
 	}
 
 	// update root directory level 1 index
-	for (int i = 0; i < CLUSTER_SIZE; clusterBuffer[i++] = 1);
+	memset(clusterBuffer, 0, CLUSTER_SIZE);
 	if (partition->writeCluster(rootDirLvl1Index, clusterBuffer) == -1)
 		return 0;
 
@@ -203,10 +207,30 @@ char KernelFS::doesExist(char* fname) {
 }
 
 File* KernelFS::open(char* fname, char mode) {
-	if (!doesExist(fname))
-		return nullptr;
+	if (mode == 'r') {
+		// file must exist in reading mode
+		if (!doesExist(fname))
+			return nullptr;
 
-	// create new File and KernelFile objects
+		// open an existing file and set pointer to the beginning
+	}
+	if (mode == 'w') {
+		// if files exists it is truncated
+		// otherwise, new one is created
+		if (doesExist(fname))
+			deleteFile(fname);
+
+		// create new file
+	}
+	if (mode == 'a') {
+		// file must exist in append mode
+		if (!doesExist(fname))
+			return nullptr;
+
+		// open an existing file and set pointer to the end
+	}
+
+	return nullptr;
 }
 
 //TODO: write functions to allocate and deallocate clusters
@@ -221,16 +245,54 @@ KernelFS::~KernelFS() {
 	delete clusterBuffer;
 }
 
+ClusterNo KernelFS::allocateCluster() {
+	for (ClusterNo i = 1; i < clusterCount; i++) {
+		if (!checkAllocated(i)) {
+			markAllocated(i);
+			return i;
+		}
+	}
+
+	return 0;
+}
+
+char KernelFS::deallocateCluster(ClusterNo freeClusterIdx) {
+	if (checkAllocated(freeClusterIdx))
+		return 0;
+
+	markDeallocated(freeClusterIdx);
+}
+
+char KernelFS::setLength(ClusterNo rootDirCluster, ClusterNo rootEntry, unsigned size) {
+	partition->readCluster(rootDirCluster, clusterBuffer);
+	rootDirEntry* entry = (rootDirEntry*)clusterBuffer + rootEntry;
+
+	unsigned* length = (unsigned*)entry + 16;
+	*length = size;
+
+	partition->writeCluster(rootDirCluster, clusterBuffer);
+}
+
 void KernelFS::markAllocated(ClusterNo clusterId) {
 	unsigned correspondingByte = clusterId / 8;
 	unsigned correspondingBit = clusterId % 8;
 
-	bitVector[correspondingByte] |= (1 << correspondingBit);
+	bitVector[correspondingByte] &= ~(1 << correspondingBit);
 }
 
 void KernelFS::markDeallocated(ClusterNo clusterId) {
 	unsigned correspondingByte = clusterId / 8;
 	unsigned correspondingBit = clusterId % 8;
 
-	bitVector[correspondingByte] &= ~(1 << correspondingBit);
+	bitVector[correspondingByte] |= (1 << correspondingBit);
+}
+
+char KernelFS::checkAllocated(ClusterNo clusterId) {
+	unsigned correspondingByte = clusterId / 8;
+	unsigned correspondingBit = clusterId % 8;
+
+	if (correspondingByte >= bitVectorByteSize)
+		return -1;
+
+	return (bitVector[correspondingByte] && (1 << correspondingBit) == 0);
 }

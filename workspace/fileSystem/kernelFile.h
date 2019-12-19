@@ -1,10 +1,11 @@
 #pragma once
 #include "utils.h"
 #include "part.h"
+#include "kernelFS.h"
 
 class KernelFile{
 public:
-	KernelFile(Partition*, ClusterNo, ClusterNo, ClusterNo);
+	KernelFile(Partition*, KernelFS*, ClusterNo, ClusterNo, ClusterNo, ClusterNo, ClusterNo);
 	~KernelFile(); //zatvaranje fajla   
 	char write(BytesCnt, char*);
 	BytesCnt read(BytesCnt, char*);
@@ -14,11 +15,15 @@ public:
 	BytesCnt getFileSize();
 	char truncate();
 private:
+	ClusterNo rootDirCluster;
+	ClusterNo rootDirEntry;
+
 	ClusterNo lvl1IndexCluster;
 	ClusterNo lvl2IndexCluster;
 	ClusterNo dataCluster;
 	unsigned position;
-	char* privateBuffer;
-	Partition *part;
+	char* clusterBuffer;
+	Partition *partition;
+	KernelFS* kernelFS;
 };
 
