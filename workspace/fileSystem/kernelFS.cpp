@@ -1,6 +1,20 @@
 #include "kernelFS.h"
-
 // TODO: Check if any readCluster return -1
+
+// initialize static variables
+Partition* KernelFS::partition = nullptr;
+
+ClusterNo KernelFS::clusterCount = 0;
+
+char* KernelFS::bitVector = nullptr;
+int KernelFS::bitVectorByteSize = 0;
+ClusterNo KernelFS::bitVectorClusterSize = 0;
+ClusterNo KernelFS::rootDirLvl1Index = 0;
+
+char* KernelFS::clusterBuffer = nullptr;
+
+Semaphore* KernelFS::mountSem = new Semaphore();
+Semaphore* KernelFS::allFilesClosed = new Semaphore();
 
 KernelFS::KernelFS() {
 	clusterBuffer = new char[CLUSTER_SIZE];
@@ -28,13 +42,16 @@ char KernelFS::mount(Partition* partition) {
 	// TODO: Use memset here.
 	// read bit vector
 	for (ClusterNo i = 0; i < bitVectorClusterSize; i++) {
-		partition->readCluster(i, clusterBuffer);
+		if (partition->readCluster(i, clusterBuffer) == -1)
+			return 0;
 		for (int j = 0; j < CLUSTER_SIZE; j++)
 			bitVector[i * CLUSTER_SIZE + j] = clusterBuffer[j];
 	}
 	
 	// set root directory index
 	rootDirLvl1Index = bitVectorClusterSize;
+
+	return 1;
 }
 
 char KernelFS::unmount() {
@@ -47,6 +64,8 @@ char KernelFS::unmount() {
 	// other partition can now be mounted
 	mountSem->signal();	
 	allFilesClosed->signal();
+
+	return 1;
 }
 
 char KernelFS::format() {
@@ -69,14 +88,18 @@ char KernelFS::format() {
 	// update bit vector on disk
 	for (int i = 0; i < bitVectorClusterSize; i++) {
 		memcpy(clusterBuffer, bitVector + i * CLUSTER_SIZE, CLUSTER_SIZE);
-		partition->writeCluster(i, clusterBuffer);
+		if (partition->writeCluster(i, clusterBuffer) == -1)
+			return 0;
 	}
 
 	// update root directory level 1 index
 	for (int i = 0; i < CLUSTER_SIZE; clusterBuffer[i++] = 1);
-	partition->writeCluster(rootDirLvl1Index, clusterBuffer);
+	if (partition->writeCluster(rootDirLvl1Index, clusterBuffer) == -1)
+		return 0;
 
 	allFilesClosed->signal();
+
+	return 1;
 }
 
 FileCnt KernelFS::readRootDir() {

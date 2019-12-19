@@ -1,7 +1,6 @@
 #pragma once
 #include "kernelFile.h"
 
-typedef unsigned BytesCnt;
 class KernelFile; 
 
 class File {

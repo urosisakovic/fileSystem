@@ -8,7 +8,7 @@ KernelFile::KernelFile(Partition *p, ClusterNo lvl1IndexCluster, ClusterNo lvl2I
 	this->dataCluster = dataCluster;
 	this->position = 0;
 
-	privateBuffer = new char[ClusterSize];
+	privateBuffer = new char[CLUSTER_SIZE];
 }
 
 KernelFile::~KernelFile() {
@@ -16,9 +16,9 @@ KernelFile::~KernelFile() {
 }
 
 char KernelFile::write(BytesCnt bytesCnt, char* buffer) {
-	int bytesInCurrentCluster = ClusterSize - position;
-	int fullClusterCnt = (bytesCnt - bytesInCurrentCluster) / ClusterSize;
-	int bytesInLastCluster = bytesCnt - bytesInCurrentCluster - fullClusterCnt * ClusterSize;
+	int bytesInCurrentCluster = CLUSTER_SIZE - position;
+	int fullClusterCnt = (bytesCnt - bytesInCurrentCluster) / CLUSTER_SIZE;
+	int bytesInLastCluster = bytesCnt - bytesInCurrentCluster - fullClusterCnt * CLUSTER_SIZE;
 
 	int readPtr = 0;
 
@@ -41,6 +41,8 @@ char KernelFile::write(BytesCnt bytesCnt, char* buffer) {
 	// write it back
 
 	// take care of allocating more memory!!!
+
+	return 0;
 }
 
 BytesCnt KernelFile::read(BytesCnt bytesCnt, char* buffer) {
