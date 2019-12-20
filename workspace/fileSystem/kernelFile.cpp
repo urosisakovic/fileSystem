@@ -101,4 +101,6 @@ char KernelFile::truncate() {
 	}
 
 	KernelFS::setLength(rootDirCluster, rootDirEntry, 0);
+
+	return 1;
 }

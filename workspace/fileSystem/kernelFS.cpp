@@ -16,13 +16,12 @@ int KernelFS::bitVectorByteSize = 0;
 ClusterNo KernelFS::bitVectorClusterSize = 0;
 ClusterNo KernelFS::rootDirLvl1Index = 0;
 
-char* KernelFS::clusterBuffer = nullptr;
+char* KernelFS::clusterBuffer = new char[CLUSTER_SIZE];
 
 Semaphore* KernelFS::mountSem = new Semaphore();
 Semaphore* KernelFS::allFilesClosed = new Semaphore();
 
 KernelFS::KernelFS() {
-	clusterBuffer = new char[CLUSTER_SIZE];
 }
 
 // TODO: If other thread tries to mount that same partition, 
@@ -171,10 +170,7 @@ char KernelFS::doesExist(char* fname) {
 	if (partition->readCluster(rootDirLvl1Index, lvl1Buffer) == -1)
 		return -1;
 
-	int entryPerIndex = CLUSTER_SIZE / sizeof(ClusterNo);
-	int entryPerDataDir = CLUSTER_SIZE / sizeof(rootDirEntry);
-
-	for (int i = 0; i < entryPerIndex; i++) {
+	for (int i = 0; i < ENTRIES_PER_INDEX; i++) {
 		lvl1Ptr = (ClusterNo*)lvl1Buffer + i;
 
 		if (*lvl1Ptr == 0)
@@ -183,7 +179,7 @@ char KernelFS::doesExist(char* fname) {
 		if (partition->readCluster((*lvl1Ptr), lvl2Buffer) == -1)
 			return -1;
 
-		for (int j = 0; j < entryPerIndex; j++) {
+		for (int j = 0; j < ENTRIES_PER_INDEX; j++) {
 			lvl2Ptr = (ClusterNo*)lvl2Buffer + j;
 
 			if (*lvl2Ptr == 0)
@@ -192,8 +188,14 @@ char KernelFS::doesExist(char* fname) {
 			if (partition->readCluster((*lvl2Ptr), clusterBuffer) == -1)
 				return -1;
 
-			for (int k = 0; k < entryPerDataDir; k++) {
-				fileEntry = (rootDirEntry*)(*lvl2Ptr) + k;
+			for (int k = 0; k < ENTRIES_PER_ROOT_DIR; k++) {
+				fileEntry = (rootDirEntry*)(*clusterBuffer) + k;
+
+				std::cout << int(clusterBuffer[0]) << std::endl;
+				std::cout << int(clusterBuffer[1]) << std::endl;
+				std::cout << int(clusterBuffer[2]) << std::endl;
+				std::cout << int(clusterBuffer[3]) << std::endl;
+				std::cout << fname << std::endl;
 
 				if (strcmp(fname, (char*)fileEntry) == 0)
 					return 1;
@@ -207,7 +209,7 @@ char KernelFS::doesExist(char* fname) {
 	return 0;
 }
 
-void splitFileName(char* fname, char* fileName, char* extension) {
+void splitFileName(char* fname, char** fileName, char** extension) {
 	int fnameLen = strlen(fname);
 	int dotPos = -1;
 	for (int i = fnameLen - 1; i >= 0; i--) {
@@ -218,36 +220,38 @@ void splitFileName(char* fname, char* fileName, char* extension) {
 	}
 
 	if (dotPos == -1) {
-		fileName = nullptr;
+		*fileName = nullptr;
 		return;
 	}
 	if (dotPos == fnameLen - 1) {
-		fileName = nullptr;
+		*fileName = nullptr;
 		return;
 	}
 	if (dotPos == 0) {
-		fileName = nullptr;
+		*fileName = nullptr;
 		return;
 	}
 	if (dotPos > 8) {
-		fileName = nullptr;
+		*fileName = nullptr;
 		return;
 	}
 	if (fnameLen - dotPos - 1 > 3) {
-		fileName = nullptr;
+		*fileName = nullptr;
 		return;
 	}
 
-	fileName = new char[dotPos];
-	extension = new char[fnameLen - dotPos - 1];
+	*fileName = new char[dotPos + 1];
+	*extension = new char[(fnameLen - dotPos - 1) + 1];
 
 	for (int i = 0; i < dotPos; i++)
-		fileName[i] = fname[i];
+		(*fileName)[i] = fname[i];
+	(*fileName)[dotPos] = '\0';
 	for (int i = dotPos + 1; i < fnameLen; i++)
-		extension[i - dotPos - 1] = fname[i];
+		(*extension)[i - dotPos - 1] = fname[i];
+	(*extension)[fnameLen - dotPos - 1] = '\0';
 
-	std::cout << "File name: " << fileName << std::endl;
-	std::cout << "Exxtension: " << extension << std::endl;
+	std::cout << "File name: " << *fileName << std::endl;
+	std::cout << "Extension: " << *extension << std::endl;
 }
 
 ClusterNo KernelFS::allocateAndSetDataCluster(char* fileName, char* extension) {
@@ -299,6 +303,8 @@ char KernelFS::addEntryToDataDir(ClusterNo dataCluster, char* fileName, char* ex
 		}
 	}
 
+	if (partition->writeCluster(dataCluster, rootDirData) == -1)
+		return 0;
 	delete[] rootDirData;
 
 	if (finished)
@@ -329,7 +335,7 @@ ClusterNo KernelFS::allocateAndSetLvl2Cluster(ClusterNo dataCluster) {
 
 File* KernelFS::open(char* fname, char mode) {
 	char *fileName = nullptr, *extension = nullptr;
-	splitFileName(fname, fileName, extension);
+	splitFileName(fname, &fileName, &extension);
 	if (fileName == nullptr)
 		return nullptr;
 	
@@ -380,7 +386,8 @@ File* KernelFS::open(char* fname, char mode) {
 							return nullptr;
 
 						*rootDirDataPtr = dataClus;
-
+						if (partition->writeCluster(*rootDirIndex2Ptr, rootDirIndex2) == -1)
+							return nullptr;
 						finished = true;
 					}
 				}
@@ -394,10 +401,12 @@ File* KernelFS::open(char* fname, char mode) {
 
 				ClusterNo lvl2Clus = allocateAndSetLvl2Cluster(dataClus);
 				// check for failure
-				if (dataClus == 0)
+				if (lvl2Clus == 0)
 					return nullptr;
 
-				*rootDirIndex2Ptr = dataClus;
+				*rootDirIndex2Ptr = lvl2Clus;
+				if (partition->writeCluster(rootDirLvl1Index, rootDirIndex1) == -1)
+					return nullptr;
 				finished = true;
 			}
 
@@ -437,13 +446,14 @@ char KernelFS::deleteFile(char* fname) {
 }
 
 KernelFS::~KernelFS() {
-	delete clusterBuffer;
 }
 
 ClusterNo KernelFS::allocateCluster() {
 	for (ClusterNo i = 1; i < clusterCount; i++) {
 		if (!checkAllocated(i)) {
 			markAllocated(i);
+			std::cout << "Allocated cluster: " << i << std::endl;
+			// system("pause");
 			return i;
 		}
 	}
@@ -475,24 +485,24 @@ char KernelFS::setLength(ClusterNo rootDirCluster, ClusterNo rootEntry, unsigned
 
 void KernelFS::markAllocated(ClusterNo clusterId) {
 	unsigned correspondingByte = clusterId / 8;
-	unsigned correspondingBit = clusterId % 8;
+	unsigned correspondingBit = 7 - clusterId % 8;
 
 	bitVector[correspondingByte] &= ~(1 << correspondingBit);
 }
 
 void KernelFS::markDeallocated(ClusterNo clusterId) {
 	unsigned correspondingByte = clusterId / 8;
-	unsigned correspondingBit = clusterId % 8;
+	unsigned correspondingBit = 7 - clusterId % 8;
 
 	bitVector[correspondingByte] |= (1 << correspondingBit);
 }
 
 char KernelFS::checkAllocated(ClusterNo clusterId) {
 	unsigned correspondingByte = clusterId / 8;
-	unsigned correspondingBit = clusterId % 8;
+	unsigned correspondingBit = 7 - clusterId % 8;
 
 	if (correspondingByte >= bitVectorByteSize)
 		return -1;
 
-	return (bitVector[correspondingByte] && (1 << correspondingBit) == 0);
+	return ((bitVector[correspondingByte] & (1 << correspondingBit)) == 0);
 }
