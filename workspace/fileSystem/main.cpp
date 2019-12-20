@@ -53,4 +53,11 @@ int main() {
 		std::cout << "tata.txt does not exist" << std::endl;
 
 	std::cout << "Program finished executing!" << std::endl;
+
+	if (k->doesExist((char*)"lala.txt"))
+		std::cout << "lala.txt does exist." << std::endl;
+	else
+		std::cout << "lala.txt does not exist" << std::endl;
+
+	std::cout << "Program finished executing!" << std::endl;
 }

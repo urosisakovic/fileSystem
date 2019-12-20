@@ -88,5 +88,6 @@ private:
     static ClusterNo allocateAndSetDataCluster(char*, char*);
     static ClusterNo allocateAndSetLvl2Cluster(ClusterNo);
     static char addEntryToDataDir(ClusterNo, char*, char*);
+    static void splitFileName(char*, char**, char**);
 };
 

@@ -1,10 +1,2 @@
-﻿  kernelFS.cpp
-C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\kernelFS.cpp(88,20): warning C4018: '<': signed/unsigned mismatch
-C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\kernelFS.cpp(93,20): warning C4018: '<': signed/unsigned mismatch
-C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\kernelFS.cpp(270,20): warning C4018: '<': signed/unsigned mismatch
-C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\kernelFS.cpp(273,20): warning C4018: '<': signed/unsigned mismatch
-C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\kernelFS.cpp(295,22): warning C4018: '<': signed/unsigned mismatch
-C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\kernelFS.cpp(298,22): warning C4018: '<': signed/unsigned mismatch
-C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\kernelFS.cpp(499,24): warning C4018: '>=': signed/unsigned mismatch
-C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\kernelFS.cpp(464): warning C4715: 'KernelFS::deallocateCluster': not all control paths return a value
+﻿  main.cpp
   fileSystem.vcxproj -> C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\Debug\fileSystem.exe

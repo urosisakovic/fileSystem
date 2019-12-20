@@ -118,10 +118,7 @@ FileCnt KernelFS::readRootDir() {
 	if (partition->readCluster(rootDirLvl1Index, lvl1Buffer) == -1)
 		return -1;
 
-	int entryPerIndex = CLUSTER_SIZE / sizeof(ClusterNo);
-	int entryPerDataDir = CLUSTER_SIZE / sizeof(rootDirEntry);
-
-	for (int i = 0; i < entryPerIndex; i++) {
+	for (int i = 0; i < ENTRIES_PER_INDEX; i++) {
 		lvl1Ptr = (ClusterNo*)lvl1Buffer + i;
 
 		if (*lvl1Ptr == 0)
@@ -130,7 +127,7 @@ FileCnt KernelFS::readRootDir() {
 		if (partition->readCluster((*lvl1Ptr), lvl2Buffer) == -1)
 			return -1;
 
-		for (int j = 0; j < entryPerIndex; j++) {
+		for (int j = 0; j < ENTRIES_PER_INDEX; j++) {
 			lvl2Ptr = (ClusterNo*)lvl2Buffer + j;
 
 			if (*lvl2Ptr == 0)
@@ -139,10 +136,10 @@ FileCnt KernelFS::readRootDir() {
 			if (partition->readCluster((*lvl2Ptr), clusterBuffer) == -1)
 				return -1;
 
-			for (int k = 0; k < entryPerDataDir; k++) {
-				fileEntry = (rootDirEntry*)(*lvl2Ptr) + k;
+			for (int k = 0; k < ENTRIES_PER_ROOT_DIR; k++) {
+				fileEntry = (rootDirEntry*)clusterBuffer + k;
 
-				if (fileEntry[0] == 0)
+				if ((*fileEntry[0]) == 0)
 					continue;
 				else
 					fileCnt++;
@@ -160,12 +157,19 @@ char KernelFS::doesExist(char* fname) {
 	int fnameLen = strlen(fname);
 	if (fnameLen > 8 || fnameLen == 0)
 		return -1;
+
+	char* fileName = nullptr, *extension = nullptr;
+	splitFileName(fname, &fileName, &extension);
+	if (fileName == nullptr)
+		return -1;
 	
 	ClusterNo* lvl1Ptr, * lvl2Ptr;
 	rootDirEntry* fileEntry;
 
 	char* lvl1Buffer = new char[CLUSTER_SIZE];
 	char* lvl2Buffer = new char[CLUSTER_SIZE];
+	char* fileEntryFileName = new char[9];
+	char* fileEntryExtension = new char[4];
 
 	if (partition->readCluster(rootDirLvl1Index, lvl1Buffer) == -1)
 		return -1;
@@ -189,27 +193,37 @@ char KernelFS::doesExist(char* fname) {
 				return -1;
 
 			for (int k = 0; k < ENTRIES_PER_ROOT_DIR; k++) {
-				fileEntry = (rootDirEntry*)(*clusterBuffer) + k;
+				fileEntry = (rootDirEntry*)clusterBuffer + k;
 
-				std::cout << int(clusterBuffer[0]) << std::endl;
-				std::cout << int(clusterBuffer[1]) << std::endl;
-				std::cout << int(clusterBuffer[2]) << std::endl;
-				std::cout << int(clusterBuffer[3]) << std::endl;
-				std::cout << fname << std::endl;
+				for (int i = 0; i < 8; i++)
+					fileEntryFileName[i] = (*fileEntry)[i];
+				fileEntryFileName[8] = '\0';
 
-				if (strcmp(fname, (char*)fileEntry) == 0)
+				for (int i = 0; i < 3; i++)
+					fileEntryExtension[i] = (*fileEntry)[i + 8];
+				fileEntryExtension[3] = '\0';
+
+				if ((strcmp(fileName, fileEntryFileName) == 0) &&
+					(strcmp(extension, fileEntryExtension) == 0)) {
+					delete[] fileEntryFileName;
+					delete[] fileEntryExtension;
+					delete[] lvl1Buffer;
+					delete[] lvl2Buffer;
 					return 1;
+				}
 			}
 		}
 	}
 
 	delete[] lvl1Buffer;
 	delete[] lvl2Buffer;
+	delete[] fileEntryFileName;
+	delete[] fileEntryExtension;
 
 	return 0;
 }
 
-void splitFileName(char* fname, char** fileName, char** extension) {
+void KernelFS::splitFileName(char* fname, char** fileName, char** extension) {
 	int fnameLen = strlen(fname);
 	int dotPos = -1;
 	for (int i = fnameLen - 1; i >= 0; i--) {
@@ -268,10 +282,10 @@ ClusterNo KernelFS::allocateAndSetDataCluster(char* fileName, char* extension) {
 	entry = (rootDirEntry*)rootDirData;
 
 	for (int i = 0; i < strlen(fileName); i++)
-		*entry[i] = fileName[i];
+		(*entry)[i] = fileName[i];
 
 	for (int i = 0; i < strlen(extension); i++) {
-		*entry[i + 8] = extension[i];
+		(*entry)[i + 8] = extension[i];
 	}
 
 	partition->writeCluster(newRootDirDataCluster, rootDirData);
@@ -291,20 +305,24 @@ char KernelFS::addEntryToDataDir(ClusterNo dataCluster, char* fileName, char* ex
 	for (int k = 0; k < ENTRIES_PER_ROOT_DIR; k++) {
 		entry = (rootDirEntry*)rootDirData + k;
 
-		if (entry[0] == 0) {
+		if ((*entry)[0] == 0) {
+			std::cout << "Saved: " << fileName << std::endl;
+
 			for (int i = 0; i < strlen(fileName); i++)
-				*entry[i] = fileName[i];
+				(*entry)[i] = fileName[i];
 
 			for (int i = 0; i < strlen(extension); i++) {
-				*entry[i + 8] = extension[i];
+				(*entry)[i + 8] = extension[i];
 			}
 			finished = true;
 			break;
 		}
 	}
 
-	if (partition->writeCluster(dataCluster, rootDirData) == -1)
-		return 0;
+	if (finished)
+		if (partition->writeCluster(dataCluster, rootDirData) == -1)
+			return 0;
+
 	delete[] rootDirData;
 
 	if (finished)
@@ -390,6 +408,9 @@ File* KernelFS::open(char* fname, char mode) {
 							return nullptr;
 						finished = true;
 					}
+
+					if (finished)
+						break;
 				}
 			}
 			// if it does not exists, create it
