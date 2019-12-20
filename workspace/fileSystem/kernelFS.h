@@ -84,4 +84,9 @@ private:
     static Semaphore* allFilesClosed;
 
     static std::unordered_map<std::string, File*> openFiles;
+
+    static ClusterNo allocateAndSetDataCluster(char*, char*);
+    static ClusterNo allocateAndSetLvl2Cluster(ClusterNo);
+    static char addEntryToDataDir(ClusterNo, char*, char*);
 };
+

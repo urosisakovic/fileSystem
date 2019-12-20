@@ -26,5 +26,31 @@ int main() {
 	else
 		std::cout << "uros.txt does not exist" << std::endl;
 
+	k->open((char*)"uros.txt", 'w');
+	k->open((char*)"viki.txt", 'w');
+	k->open((char*)"mama.txt", 'w');
+	k->open((char*)"tata.txt", 'w');
+	std::cout << "Counted files: " << k->readRootDir() << std::endl;
+
+	if (k->doesExist((char*)"uros.txt"))
+		std::cout << "uros.txt does exist." << std::endl;
+	else
+		std::cout << "uros.txt does not exist" << std::endl;
+
+	if (k->doesExist((char*)"viki.txt"))
+		std::cout << "viki.txt does exist." << std::endl;
+	else
+		std::cout << "viki.txt does not exist" << std::endl;
+
+	if (k->doesExist((char*)"mama.txt"))
+		std::cout << "mama.txt does exist." << std::endl;
+	else
+		std::cout << "mama.txt does not exist" << std::endl;
+
+	if (k->doesExist((char*)"tata.txt"))
+		std::cout << "tata.txt does exist." << std::endl;
+	else
+		std::cout << "tata.txt does not exist" << std::endl;
+
 	std::cout << "Program finished executing!" << std::endl;
 }

@@ -14,8 +14,10 @@ public:
 	BytesCnt getFileSize ();   
 	char truncate (); 
 private: 
-	friend class FS;   
-	friend class KernelFS;   
-	File();  //objekat fajla se može kreirati samo otvaranjem   
-	KernelFile *myImpl; 
+	KernelFile* myImpl;
+	//objekat fajla se može kreirati samo otvaranjem
+	File();
+
+	friend class FS;
+	friend class KernelFS;
 };

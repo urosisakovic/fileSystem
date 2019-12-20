@@ -3,7 +3,7 @@
 #include "part.h"
 #include "kernelFS.h"
 
-class KernelFile{
+class KernelFile {
 public:
 	KernelFile(Partition*, ClusterNo, ClusterNo, ClusterNo, ClusterNo, ClusterNo);
 	~KernelFile(); //zatvaranje fajla   
