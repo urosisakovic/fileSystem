@@ -142,7 +142,8 @@ BytesCnt KernelFile::filePos() {
 }
 
 char KernelFile::eof() {
-	// position is maxed out, so is dataCluster ptr and lvl2Ptr
+	if (filePos() == getFileSize())
+		return 1;
 	return 0;
 }
 
@@ -151,24 +152,35 @@ BytesCnt KernelFile::getFileSize() {
 }
 
 char KernelFile::truncate() {
-	/*partition->readCluster(lvl1IndexCluster, clusterBuffer);
+	KernelFS::readCluster(filePtr->lvl1IndexCluster, clusterBuffer);
 
-	char additionalBuffer[CLUSTER_SIZE];
+	char additionalBuffer[CLUSTER_SIZE], lvl2IndexBuffer[CLUSTER_SIZE];
 
-	ClusterNo *lvl1Ptr, *lvl2Ptr;
+	ClusterNo *lvl1Ptr, *lvl2Ptr, *dataPtr;
 	for (ClusterNo i = 0; i < ENTRIES_PER_INDEX; i++) {
 		lvl1Ptr = (ClusterNo*)clusterBuffer + i;
 
 		if (*lvl1Ptr == 0)
 			continue;
 
-		partition->readCluster(*lvl1Ptr, additionalBuffer);
+		KernelFS::readCluster(*lvl1Ptr, additionalBuffer);
 
 		for (ClusterNo j = 0; j < ENTRIES_PER_INDEX; j++) {
 			lvl2Ptr = (ClusterNo*)additionalBuffer + j;
 
 			if (*lvl2Ptr == 0)
 				continue;
+
+			KernelFS::readCluster(*lvl2Ptr, lvl2IndexBuffer);
+
+			for (ClusterNo k = 0; k < ENTRIES_PER_INDEX; k++) {
+				dataPtr = (ClusterNo*)lvl2IndexBuffer + k;
+
+				if (*dataPtr == 0)
+					continue;
+
+				KernelFS::deallocateCluster(*dataPtr);
+			}
 
 			KernelFS::deallocateCluster(*lvl2Ptr);
 		}
@@ -177,9 +189,9 @@ char KernelFile::truncate() {
 		*lvl1Ptr = 0;
 	}
 
-	KernelFS::setLength(rootDirCluster, rootDirEntry, 0);
+	KernelFS::setLength(filePtr->rootDirCluster, filePtr->rootDirEntry, 0);
 
-	return 1;*/
+	return 1;
 	
 	return 0;
 }
