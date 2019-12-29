@@ -61,7 +61,47 @@ void test1() {
 	std::cout << "Program finished executing!" << std::endl;
 }
 
+void check(char *a, char *b, int len) {
+	for (int i = 0; i < len; i++)
+		if (a[i] != b[i]) {
+			std::cout << "NE RADI: " << i << std::endl;
+			return;
+		}
+
+	std::cout << "RADI" << std::endl;
+}
+
+void test2() {
+	std::cout << "Test1 started executing!" << std::endl;
+
+	Partition* p = new Partition((char*)"p1.ini");
+	std::cout << "Created Partition" << std::endl;
+
+	KernelFS* k = new KernelFS();
+	std::cout << "Created KernelFS" << std::endl;
+
+	k->mount(p);
+	std::cout << "Mounted partition" << std::endl;
+
+	k->format();
+	std::cout << "Formatted partition" << std::endl;
+
+	File *urosFile = k->open((char*)"uros.txt", 'w');
+
+	const int LEN = 2049;
+
+	char* wb = new char[LEN];
+	for (int i = 0; i < LEN; wb[i++] = i);
+
+	urosFile->write(LEN, wb);
+
+	char* rb = new char[LEN];
+	urosFile->read(LEN, rb);
+	
+	check(wb, rb, LEN);
+
+}
 
 int main() {
-	test1();
+	test2();
 }

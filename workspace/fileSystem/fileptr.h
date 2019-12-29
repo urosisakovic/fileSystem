@@ -19,11 +19,9 @@ private:
 	ClusterNo dataCluster;
 	unsigned pos;
 
-	Partition* partition;
-
 public:
 	FilePointer() = default;
-	FilePointer(Partition *p, ClusterNo rootDirCluster, ClusterNo rootDirEntry);
+	FilePointer(ClusterNo rootDirCluster, ClusterNo rootDirEntry);
 
 	char GoToNextCluster();
 	void ensureDataCluster();

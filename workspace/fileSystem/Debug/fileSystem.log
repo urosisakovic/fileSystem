@@ -1,11 +1,3 @@
-﻿  file.cpp
-  fileptr.cpp
-  fs.cpp
-  kernelFile.cpp
-  kernelFS.cpp
-  main.cpp
-  Generating Code...
-C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\kernelFS.cpp(483): warning C4715: 'KernelFS::deallocateCluster': not all control paths return a value
-particija.lib(part.obj) : warning LNK4099: PDB 'particija.pdb' was not found with 'particija.lib(part.obj)' or at 'C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\Debug\particija.pdb'; linking object as if no debug info
-particija.lib(PartitionImpl.obj) : warning LNK4099: PDB 'particija.pdb' was not found with 'particija.lib(PartitionImpl.obj)' or at 'C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\Debug\particija.pdb'; linking object as if no debug info
+﻿  kernelFS.cpp
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\kernelFS.cpp(499): warning C4715: 'KernelFS::deallocateCluster': not all control paths return a value
   fileSystem.vcxproj -> C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\Debug\fileSystem.exe

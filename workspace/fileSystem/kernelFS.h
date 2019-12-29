@@ -6,8 +6,10 @@
 #include "part.h"
 #include "utils.h"
 #include "file.h"
+#include "kernelFile.h"
 
 class File;
+class KernelFile;
 
 class KernelFS {
 public:
@@ -50,6 +52,9 @@ public:
     static char setLvl1Index(ClusterNo, ClusterNo, ClusterNo);
     static char setLvl2Index(ClusterNo, ClusterNo, ClusterNo);
     static char setDataCluster(ClusterNo, ClusterNo, ClusterNo);
+
+    static int readCluster(ClusterNo, char* buffer);
+    static int writeCluster(ClusterNo, const char* buffer);
 private:
     // pointer to a Partition object which abstracts
     // Windows 10 x64 API towards hard disk
@@ -90,7 +95,7 @@ private:
 
     static ClusterNo allocateAndSetDataCluster(char*, char*);
     static ClusterNo allocateAndSetLvl2Cluster(ClusterNo);
-    static char addEntryToDataDir(ClusterNo, char*, char*);
+    static char addEntryToDataDir(ClusterNo, char*, char*, ClusterNo &);
     static void splitFileName(char*, char**, char**);
 };
 

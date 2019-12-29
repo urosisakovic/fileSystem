@@ -1,9 +1,7 @@
 #include "fileptr.h"
 #include <iostream>
 
-FilePointer::FilePointer(Partition *p, ClusterNo rootDirCluster, ClusterNo rootDirEntry) {
-	this->partition = p;
-
+FilePointer::FilePointer(ClusterNo rootDirCluster, ClusterNo rootDirEntry) {
 	this->rootDirCluster = rootDirCluster;
 	this->rootDirEntry = rootDirEntry;
 
@@ -29,7 +27,7 @@ char FilePointer::GoToNextCluster() {
 		lvl2IndexEntry++;
 
 		char* clusterBuffer = new char[CLUSTER_SIZE];
-		if (partition->readCluster(lvl2IndexCluster, clusterBuffer) == -1)
+		if (KernelFS::readCluster(lvl2IndexCluster, clusterBuffer) == -1)
 			return 0;
 		
 		ClusterNo* dataClustPtr = (ClusterNo*)clusterBuffer + lvl2IndexEntry;
@@ -61,7 +59,7 @@ char FilePointer::GoToNextCluster() {
 		lvl1IndexEntry++;
 
 		char* clusterBuffer = new char[CLUSTER_SIZE];
-		if (partition->readCluster(lvl1IndexCluster, clusterBuffer) == -1)
+		if (KernelFS::readCluster(lvl1IndexCluster, clusterBuffer) == -1)
 			return 0;
 
 		ClusterNo* lvl2IndexPtr = (ClusterNo*)clusterBuffer + lvl1IndexEntry;
