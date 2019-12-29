@@ -2,10 +2,11 @@
 #include "utils.h"
 #include "part.h"
 #include "kernelFS.h"
+#include "filePointer.h"
 
 class KernelFile {
 public:
-	KernelFile(Partition*, ClusterNo, ClusterNo, ClusterNo, ClusterNo, ClusterNo);
+	KernelFile(KernelFS*, Partition*, ClusterNo, ClusterNo);
 	~KernelFile(); //zatvaranje fajla   
 	char write(BytesCnt, char*);
 	BytesCnt read(BytesCnt, char*);
@@ -15,14 +16,9 @@ public:
 	BytesCnt getFileSize();
 	char truncate();
 private:
-	ClusterNo rootDirCluster;
-	ClusterNo rootDirEntry;
-
-	ClusterNo lvl1IndexCluster;
-	ClusterNo lvl2IndexCluster;
-	ClusterNo dataCluster;
-	unsigned position;
+	FilePointer *filePtr;
 	char* clusterBuffer;
-	Partition *partition;
+	Partition* partition;
+	KernelFS* fs;
 };
 

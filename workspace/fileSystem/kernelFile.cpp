@@ -1,48 +1,39 @@
 #include "kernelFile.h"
 
-KernelFile::KernelFile(Partition *p, ClusterNo rootDirCluster, ClusterNo rootDirEntry, ClusterNo lvl1IndexCluster, ClusterNo lvl2IndexCluster, ClusterNo dataCluster) {
+KernelFile::KernelFile(KernelFS *fs, Partition *p, ClusterNo rootDirCluster, ClusterNo rootDirEntry) {
+	this->fs = fs;
 	this->partition = p;
-	this->rootDirCluster = rootDirCluster;
-
-	this->rootDirEntry = rootDirEntry;
-	this->lvl1IndexCluster = lvl1IndexCluster;
-	this->lvl2IndexCluster = lvl2IndexCluster;
-	this->dataCluster = dataCluster;
-	this->position = 0;
+	this->filePtr = new FilePointer(rootDirCluster, rootDirEntry);
 
 	clusterBuffer = new char[CLUSTER_SIZE];
 }
 
 KernelFile::~KernelFile() {
+	delete filePtr;
 	delete[] clusterBuffer;
 }
 
 char KernelFile::write(BytesCnt bytesCnt, char* buffer) {
-	int bytesInCurrentCluster = CLUSTER_SIZE - position;
-	int fullClusterCnt = (bytesCnt - bytesInCurrentCluster) / CLUSTER_SIZE;
-	int bytesInLastCluster = bytesCnt - bytesInCurrentCluster - fullClusterCnt * CLUSTER_SIZE;
+	if (bytesCnt == 0)
+		return 1;
+	
+	filePtr->ensureDataCluster();
 
-	int readPtr = 0;
+	unsigned currClusterFree = CLUSTER_SIZE - filePtr->pos;
+	if (partition->readCluster(filePtr->dataCluster, clusterBuffer) == -1)
+		return 0;
+	memcpy(clusterBuffer + filePtr->pos, buffer, currClusterFree);
+	if (partition->writeCluster(filePtr->dataCluster, clusterBuffer) == -1)
+		return 0;
 
-	// write first cluster
-	partition->readCluster(dataCluster, clusterBuffer);
-	for (; readPtr < bytesInCurrentCluster; readPtr++)
-		clusterBuffer[position++] = buffer[readPtr];
-	partition->writeCluster(dataCluster, clusterBuffer);
+	unsigned bufferPtr = currClusterFree;
 
-	// write full clusters
-	for (int i = 0; i < fullClusterCnt; i++) {
-		// update lvl2Index, dataCluster and position
-		// write to the following cluster
+	while (bufferPtr >= CLUSTER_SIZE) {
+
+		bufferPtr -= CLUSTER_SIZE;
 	}
 
-	// write last cluster
-	// update lvl2Index, dataCluster and position
-	// read last cluster
-	// alter that data
-	// write it back
 
-	// take care of allocating more memory!!!
 
 	return 0;
 }
@@ -58,7 +49,7 @@ char KernelFile::seek(BytesCnt bytesCnt) {
 }
 
 BytesCnt KernelFile::filePos() {
-	return position;
+	return 0;
 }
 
 char KernelFile::eof() {

@@ -438,14 +438,7 @@ File* KernelFS::open(char* fname, char mode) {
 		delete[] rootDirIndex1;
 		delete[] rootDirIndex2;
 
-		/*File* f = new File();
-		KernelFile* kf = new KernelFile(partition, 0, 0, 0, 0, 0);
-
-		openFiles[fname] = f;*/
-
 		return nullptr;
-
-		// create new file
 	}
 	if (mode == 'a') {
 		// file must exist in append mode
@@ -499,6 +492,49 @@ char KernelFS::setLength(ClusterNo rootDirCluster, ClusterNo rootEntry, unsigned
 	*length = size;
 
 	if (partition->writeCluster(rootDirCluster, clusterBuffer) == -1)
+		return 0;
+
+	return 1;
+}
+
+char KernelFS::setLvl1Index(ClusterNo rootDirCluster, ClusterNo rootEntry, ClusterNo lvl1Index) {
+	if (partition->readCluster(rootDirCluster, clusterBuffer) == -1)
+		return 0;
+
+	rootDirEntry* entry = (rootDirEntry*)clusterBuffer + rootEntry;
+
+	ClusterNo* lvl1 = (ClusterNo*)entry + 12;
+	*lvl1 = lvl1Index;
+
+	if (partition->writeCluster(rootDirCluster, clusterBuffer) == -1)
+		return 0;
+
+	return 1;
+}
+
+char KernelFS::setLvl2Index(ClusterNo lvl1Index, ClusterNo lvl1IndexEntry, ClusterNo lvl2Index) {
+	if (partition->readCluster(lvl1Index, clusterBuffer) == -1)
+		return 0;
+
+	ClusterNo* entry = (ClusterNo*)clusterBuffer + lvl1IndexEntry;
+
+	*entry = lvl2Index;
+
+	if (partition->writeCluster(lvl1Index, clusterBuffer) == -1)
+		return 0;
+
+	return 1;
+}
+
+char KernelFS::setDataCluster(ClusterNo lvl2Index, ClusterNo lvl2IndexEntry, ClusterNo dataCluster) {
+	if (partition->readCluster(lvl2Index, clusterBuffer) == -1)
+		return 0;
+
+	ClusterNo* entry = (ClusterNo*)clusterBuffer + lvl2IndexEntry;
+
+	*entry = dataCluster;
+
+	if (partition->writeCluster(lvl2Index, clusterBuffer) == -1)
 		return 0;
 
 	return 1;
