@@ -2,11 +2,10 @@
 #include "kernelFS.h"
 #include "part.h"
 
+void test1() {
+	std::cout << "Test1 started executing!" << std::endl;
 
-int main() {
-	std::cout << "Program started executing!" << std::endl;
-
-	Partition* p = new Partition((char *)"p1.ini");
+	Partition* p = new Partition((char*)"p1.ini");
 	std::cout << "Created Partition" << std::endl;
 
 	KernelFS* k = new KernelFS();
@@ -60,4 +59,9 @@ int main() {
 		std::cout << "lala.txt does not exist" << std::endl;
 
 	std::cout << "Program finished executing!" << std::endl;
+}
+
+
+int main() {
+	test1();
 }

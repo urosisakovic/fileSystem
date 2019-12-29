@@ -5,7 +5,9 @@ KernelFile::KernelFile(KernelFS *fs, Partition *p, ClusterNo rootDirCluster, Clu
 	this->partition = p;
 	this->filePtr = new FilePointer(p, rootDirCluster, rootDirEntry);
 
-	clusterBuffer = new char[CLUSTER_SIZE];
+	this->clusterBuffer = new char[CLUSTER_SIZE];
+
+	this->size = 0;
 }
 
 KernelFile::~KernelFile() {
@@ -148,4 +150,6 @@ char KernelFile::truncate() {
 	KernelFS::setLength(rootDirCluster, rootDirEntry, 0);
 
 	return 1;*/
+	
+	return 0;
 }

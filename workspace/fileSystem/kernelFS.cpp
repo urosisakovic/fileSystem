@@ -12,7 +12,7 @@ Partition* KernelFS::partition = nullptr;
 ClusterNo KernelFS::clusterCount = 0;
 
 char* KernelFS::bitVector = nullptr;
-int KernelFS::bitVectorByteSize = 0;
+unsigned KernelFS::bitVectorByteSize = 0;
 ClusterNo KernelFS::bitVectorClusterSize = 0;
 ClusterNo KernelFS::rootDirLvl1Index = 0;
 
@@ -84,13 +84,13 @@ char KernelFS::format() {
 	for (int i = 0; i < 7; i++)
 		allSet += 1 << i;
 
-	for (int i = 0; i < bitVectorByteSize; bitVector[i++] = allSet);
-	for (int i = 0; i < bitVectorClusterSize; i++)
+	for (unsigned i = 0; i < bitVectorByteSize; bitVector[i++] = allSet);
+	for (unsigned i = 0; i < bitVectorClusterSize; i++)
 		markAllocated(i);
 	markAllocated(rootDirLvl1Index);
 
 	// update bit vector on disk
-	for (int i = 0; i < bitVectorClusterSize; i++) {
+	for (unsigned i = 0; i < bitVectorClusterSize; i++) {
 		memcpy(clusterBuffer, bitVector + i * CLUSTER_SIZE, CLUSTER_SIZE);
 		if (partition->writeCluster(i, clusterBuffer) == -1)
 			return 0;
@@ -281,10 +281,10 @@ ClusterNo KernelFS::allocateAndSetDataCluster(char* fileName, char* extension) {
 
 	entry = (rootDirEntry*)rootDirData;
 
-	for (int i = 0; i < strlen(fileName); i++)
+	for (unsigned i = 0; i < strlen(fileName); i++)
 		(*entry)[i] = fileName[i];
 
-	for (int i = 0; i < strlen(extension); i++) {
+	for (unsigned i = 0; i < strlen(extension); i++) {
 		(*entry)[i + 8] = extension[i];
 	}
 
@@ -308,10 +308,10 @@ char KernelFS::addEntryToDataDir(ClusterNo dataCluster, char* fileName, char* ex
 		if ((*entry)[0] == 0) {
 			std::cout << "Saved: " << fileName << std::endl;
 
-			for (int i = 0; i < strlen(fileName); i++)
+			for (unsigned i = 0; i < strlen(fileName); i++)
 				(*entry)[i] = fileName[i];
 
-			for (int i = 0; i < strlen(extension); i++) {
+			for (unsigned i = 0; i < strlen(extension); i++) {
 				(*entry)[i + 8] = extension[i];
 			}
 			finished = true;

@@ -61,7 +61,7 @@ private:
 
     static char *bitVector;
     // byte size of bit vector
-    static int bitVectorByteSize;
+    static unsigned bitVectorByteSize;
     // cluster size of bit vector
     static ClusterNo bitVectorClusterSize;
 
