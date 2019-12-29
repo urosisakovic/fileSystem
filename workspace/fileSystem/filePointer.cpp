@@ -1,21 +1,25 @@
 #include "filePointer.h"
 
-FilePointer::FilePointer(ClusterNo rootDirCluster, ClusterNo rootDirEntry) {
+FilePointer::FilePointer(Partition *p, ClusterNo rootDirCluster, ClusterNo rootDirEntry) {
+	this->partition = p;
+
 	this->rootDirCluster = rootDirCluster;
 	this->rootDirEntry = rootDirEntry;
 
 	this->lvl1IndexCluster = 0;
 	this->lvl1IndexEntry = 0;
+	//this->lvl1IndexSize = ...;
 
 	this->lvl2IndexCluster = 0;
 	this->lvl2IndexEntry = 0;
+	//this->lvl2IndexSize = ...;
 
 	this->dataCluster = 0;
 	this->pos = 0;
 }
 
 char FilePointer::GoToNextCluster() {
-	return 0;
+
 }
 
 void FilePointer::ensureDataCluster() {

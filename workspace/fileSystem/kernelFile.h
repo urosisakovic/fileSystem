@@ -20,5 +20,7 @@ private:
 	char* clusterBuffer;
 	Partition* partition;
 	KernelFS* fs;
+
+	unsigned size;
 };
 

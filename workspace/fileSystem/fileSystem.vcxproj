@@ -141,6 +141,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="file.h" />
+    <ClInclude Include="filePointer.h" />
     <ClInclude Include="fs.h" />
     <ClInclude Include="kernelFile.h" />
     <ClInclude Include="kernelFS.h" />
@@ -150,6 +151,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="file.cpp" />
+    <ClCompile Include="filePointer.cpp" />
     <ClCompile Include="fs.cpp" />
     <ClCompile Include="kernelFile.cpp" />
     <ClCompile Include="kernelFS.cpp" />

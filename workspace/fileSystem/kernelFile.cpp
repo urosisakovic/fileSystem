@@ -3,7 +3,7 @@
 KernelFile::KernelFile(KernelFS *fs, Partition *p, ClusterNo rootDirCluster, ClusterNo rootDirEntry) {
 	this->fs = fs;
 	this->partition = p;
-	this->filePtr = new FilePointer(rootDirCluster, rootDirEntry);
+	this->filePtr = new FilePointer(p, rootDirCluster, rootDirEntry);
 
 	clusterBuffer = new char[CLUSTER_SIZE];
 }
@@ -20,6 +20,17 @@ char KernelFile::write(BytesCnt bytesCnt, char* buffer) {
 	filePtr->ensureDataCluster();
 
 	unsigned currClusterFree = CLUSTER_SIZE - filePtr->pos;
+
+	if (bytesCnt <= currClusterFree) {
+		if (partition->readCluster(filePtr->dataCluster, clusterBuffer) == -1)
+			return 0;
+		memcpy(clusterBuffer + filePtr->pos, buffer, bytesCnt);
+		if (partition->writeCluster(filePtr->dataCluster, clusterBuffer) == -1)
+			return 0;
+
+		return 1;
+	}
+
 	if (partition->readCluster(filePtr->dataCluster, clusterBuffer) == -1)
 		return 0;
 	memcpy(clusterBuffer + filePtr->pos, buffer, currClusterFree);
@@ -27,20 +38,63 @@ char KernelFile::write(BytesCnt bytesCnt, char* buffer) {
 		return 0;
 
 	unsigned bufferPtr = currClusterFree;
+	while (bytesCnt - bufferPtr >= CLUSTER_SIZE) {
+		filePtr->GoToNextCluster();
 
-	while (bufferPtr >= CLUSTER_SIZE) {
+		if (partition->readCluster(filePtr->dataCluster, clusterBuffer) == -1)
+			return 0;
+		memcpy(clusterBuffer, buffer + bufferPtr, CLUSTER_SIZE);
+		if (partition->writeCluster(filePtr->dataCluster, clusterBuffer) == -1)
+			return 0;
 
-		bufferPtr -= CLUSTER_SIZE;
+		bufferPtr += CLUSTER_SIZE;
 	}
 
+	filePtr->GoToNextCluster();
+	if (partition->readCluster(filePtr->dataCluster, clusterBuffer) == -1)
+		return 0;
+	memcpy(clusterBuffer, buffer + bufferPtr, bytesCnt - bufferPtr);
+	if (partition->writeCluster(filePtr->dataCluster, clusterBuffer) == -1)
+		return 0;
 
-
-	return 0;
+	return 1;
 }
 
 BytesCnt KernelFile::read(BytesCnt bytesCnt, char* buffer) {
-	// same stuff as in write()
-	return BytesCnt();
+	if (bytesCnt == 0)
+		return 1;
+
+	unsigned currClusterFree = CLUSTER_SIZE - filePtr->pos;
+
+	if (bytesCnt <= currClusterFree) {
+		if (partition->readCluster(filePtr->dataCluster, clusterBuffer) == -1)
+			return 0;
+		memcpy(buffer, clusterBuffer + filePtr->pos, bytesCnt);
+		
+		return 1;
+	}
+
+	if (partition->readCluster(filePtr->dataCluster, clusterBuffer) == -1)
+		return 0;
+	memcpy(buffer, clusterBuffer + filePtr->pos, currClusterFree);
+
+	unsigned bufferPtr = currClusterFree;
+	while (bytesCnt - bufferPtr >= CLUSTER_SIZE) {
+		filePtr->GoToNextCluster();
+
+		if (partition->readCluster(filePtr->dataCluster, clusterBuffer) == -1)
+			return 0;
+		memcpy(buffer + bufferPtr, clusterBuffer, CLUSTER_SIZE);
+
+		bufferPtr += CLUSTER_SIZE;
+	}
+
+	filePtr->GoToNextCluster();
+	if (partition->readCluster(filePtr->dataCluster, clusterBuffer) == -1)
+		return 0;
+	memcpy(buffer + bufferPtr, clusterBuffer, bytesCnt - bufferPtr);
+	
+	return 1;
 }
 
 char KernelFile::seek(BytesCnt bytesCnt) {
@@ -65,7 +119,7 @@ BytesCnt KernelFile::getFileSize() {
 }
 
 char KernelFile::truncate() {
-	partition->readCluster(lvl1IndexCluster, clusterBuffer);
+	/*partition->readCluster(lvl1IndexCluster, clusterBuffer);
 
 	char additionalBuffer[CLUSTER_SIZE];
 
@@ -93,5 +147,5 @@ char KernelFile::truncate() {
 
 	KernelFS::setLength(rootDirCluster, rootDirEntry, 0);
 
-	return 1;
+	return 1;*/
 }
