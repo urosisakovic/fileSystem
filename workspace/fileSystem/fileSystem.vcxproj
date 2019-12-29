@@ -146,6 +146,10 @@
     <ClInclude Include="fs.h" />
     <ClInclude Include="kernelFile.h" />
     <ClInclude Include="kernelFS.h" />
+    <ClInclude Include="OpenAppend.h" />
+    <ClInclude Include="OpenFileStrategy.h" />
+    <ClInclude Include="OpenRead.h" />
+    <ClInclude Include="OpenWrite.h" />
     <ClInclude Include="part.h" />
     <ClInclude Include="sem.h" />
     <ClInclude Include="utils.h" />
@@ -158,6 +162,10 @@
     <ClCompile Include="kernelFile.cpp" />
     <ClCompile Include="kernelFS.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="OpenAppend.cpp" />
+    <ClCompile Include="OpenFileStrategy.cpp" />
+    <ClCompile Include="OpenRead.cpp" />
+    <ClCompile Include="OpenWrite.cpp" />
     <ClCompile Include="sem.cpp" />
     <ClCompile Include="semaphore.cpp" />
   </ItemGroup>

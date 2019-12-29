@@ -2,6 +2,7 @@
 #include "utils.h"
 #include "part.h"
 #include <cstring>
+#include <iostream>
 
 class ClusterAllocation {
 public:

@@ -1,5 +1,4 @@
 #include "fileptr.h"
-#include <iostream>
 
 FilePointer::FilePointer(ClusterNo rootDirCluster, ClusterNo rootDirEntry) {
 	this->rootDirCluster = rootDirCluster;

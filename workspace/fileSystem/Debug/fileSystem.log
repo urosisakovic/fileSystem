@@ -1,2 +1,20 @@
-﻿  main.cpp
-  fileSystem.vcxproj -> C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\Debug\fileSystem.exe
+﻿  file.cpp
+  fileptr.cpp
+  fs.cpp
+  kernelFile.cpp
+  kernelFS.cpp
+  main.cpp
+  OpenAppend.cpp
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenRead.h(8,26): error C2504: 'OpenFileStrategy': base class undefined
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenWrite.h(8,26): error C2504: 'OpenFileStrategy': base class undefined
+  OpenFileStrategy.cpp
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenAppend.h(8,26): error C2504: 'OpenFileStrategy': base class undefined
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenRead.h(8,26): error C2504: 'OpenFileStrategy': base class undefined
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenWrite.h(8,26): error C2504: 'OpenFileStrategy': base class undefined
+  OpenRead.cpp
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenAppend.h(8,26): error C2504: 'OpenFileStrategy': base class undefined
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenWrite.h(8,26): error C2504: 'OpenFileStrategy': base class undefined
+  OpenWrite.cpp
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenAppend.h(8,26): error C2504: 'OpenFileStrategy': base class undefined
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenRead.h(8,26): error C2504: 'OpenFileStrategy': base class undefined
+  Generating Code...

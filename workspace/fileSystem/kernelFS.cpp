@@ -1,5 +1,4 @@
 #include "kernelFS.h"
-#include <iostream>
 // TODO: Check if any readCluster return -1
 // TODO: Use bool instead of char
 // TODO: Use inline functions
@@ -20,9 +19,6 @@ char* KernelFS::clusterBuffer = new char[CLUSTER_SIZE];
 
 Semaphore* KernelFS::mountSem = new Semaphore();
 Semaphore* KernelFS::allFilesClosed = new Semaphore();
-
-KernelFS::KernelFS() {
-}
 
 // TODO: If other thread tries to mount that same partition, 
 //		 what should happen?
@@ -47,7 +43,7 @@ char KernelFS::mount(Partition* partition) {
 	
 	// read bit vector
 	for (ClusterNo i = 0; i < bitVectorClusterSize; i++) {
-		if (partition->readCluster(i, clusterBuffer) == -1)
+		if (ClusterAllocation::readCluster(i, clusterBuffer) == -1)
 			return 0;
 		memcpy(bitVector + i * CLUSTER_SIZE, clusterBuffer, CLUSTER_SIZE);
 	}
@@ -94,13 +90,13 @@ char KernelFS::format() {
 	// update bit vector on disk
 	for (unsigned i = 0; i < bitVectorClusterSize; i++) {
 		memcpy(clusterBuffer, bitVector + i * CLUSTER_SIZE, CLUSTER_SIZE);
-		if (partition->writeCluster(i, clusterBuffer) == -1)
+		if (ClusterAllocation::writeCluster(i, clusterBuffer) == -1)
 			return 0;
 	}
 
 	// update root directory level 1 index
 	memset(clusterBuffer, 0, CLUSTER_SIZE);
-	if (partition->writeCluster(rootDirLvl1Index, clusterBuffer) == -1)
+	if (ClusterAllocation::writeCluster(rootDirLvl1Index, clusterBuffer) == -1)
 		return 0;
 
 	allFilesClosed->signal();
@@ -117,7 +113,7 @@ FileCnt KernelFS::readRootDir() {
 	char* lvl1Buffer = new char[CLUSTER_SIZE];
 	char* lvl2Buffer = new char[CLUSTER_SIZE];
 
-	if (partition->readCluster(rootDirLvl1Index, lvl1Buffer) == -1)
+	if (ClusterAllocation::readCluster(rootDirLvl1Index, lvl1Buffer) == -1)
 		return -1;
 
 	for (int i = 0; i < ENTRIES_PER_INDEX; i++) {
@@ -126,7 +122,7 @@ FileCnt KernelFS::readRootDir() {
 		if (*lvl1Ptr == 0)
 			continue;
 
-		if (partition->readCluster((*lvl1Ptr), lvl2Buffer) == -1)
+		if (ClusterAllocation::readCluster((*lvl1Ptr), lvl2Buffer) == -1)
 			return -1;
 
 		for (int j = 0; j < ENTRIES_PER_INDEX; j++) {
@@ -135,7 +131,7 @@ FileCnt KernelFS::readRootDir() {
 			if (*lvl2Ptr == 0)
 				continue;
 
-			if (partition->readCluster((*lvl2Ptr), clusterBuffer) == -1)
+			if (ClusterAllocation::readCluster((*lvl2Ptr), clusterBuffer) == -1)
 				return -1;
 
 			for (int k = 0; k < ENTRIES_PER_ROOT_DIR; k++) {
@@ -161,7 +157,8 @@ char KernelFS::doesExist(char* fname) {
 		return -1;
 
 	char* fileName = nullptr, *extension = nullptr;
-	splitFileName(fname, &fileName, &extension);
+	//TODO: Fix this design
+	(new OpenAppend(fname, 0))->splitFileName(fname, &fileName, &extension);
 	if (fileName == nullptr)
 		return -1;
 	
@@ -173,7 +170,7 @@ char KernelFS::doesExist(char* fname) {
 	char* fileEntryFileName = new char[9];
 	char* fileEntryExtension = new char[4];
 
-	if (partition->readCluster(rootDirLvl1Index, lvl1Buffer) == -1)
+	if (ClusterAllocation::readCluster(rootDirLvl1Index, lvl1Buffer) == -1)
 		return -1;
 
 	for (int i = 0; i < ENTRIES_PER_INDEX; i++) {
@@ -182,7 +179,7 @@ char KernelFS::doesExist(char* fname) {
 		if (*lvl1Ptr == 0)
 			continue;
 
-		if (partition->readCluster((*lvl1Ptr), lvl2Buffer) == -1)
+		if (ClusterAllocation::readCluster((*lvl1Ptr), lvl2Buffer) == -1)
 			return -1;
 
 		for (int j = 0; j < ENTRIES_PER_INDEX; j++) {
@@ -191,7 +188,7 @@ char KernelFS::doesExist(char* fname) {
 			if (*lvl2Ptr == 0)
 				continue;
 
-			if (partition->readCluster((*lvl2Ptr), clusterBuffer) == -1)
+			if (ClusterAllocation::readCluster((*lvl2Ptr), clusterBuffer) == -1)
 				return -1;
 
 			for (int k = 0; k < ENTRIES_PER_ROOT_DIR; k++) {
@@ -225,251 +222,23 @@ char KernelFS::doesExist(char* fname) {
 	return 0;
 }
 
-void KernelFS::splitFileName(char* fname, char** fileName, char** extension) {
-	int fnameLen = strlen(fname);
-	int dotPos = -1;
-	for (int i = fnameLen - 1; i >= 0; i--) {
-		if (fname[i] == '.') {
-			dotPos = i;
-			break;
-		}
-	}
-
-	if (dotPos == -1) {
-		*fileName = nullptr;
-		return;
-	}
-	if (dotPos == fnameLen - 1) {
-		*fileName = nullptr;
-		return;
-	}
-	if (dotPos == 0) {
-		*fileName = nullptr;
-		return;
-	}
-	if (dotPos > 8) {
-		*fileName = nullptr;
-		return;
-	}
-	if (fnameLen - dotPos - 1 > 3) {
-		*fileName = nullptr;
-		return;
-	}
-
-	*fileName = new char[dotPos + 1];
-	*extension = new char[(fnameLen - dotPos - 1) + 1];
-
-	for (int i = 0; i < dotPos; i++)
-		(*fileName)[i] = fname[i];
-	(*fileName)[dotPos] = '\0';
-	for (int i = dotPos + 1; i < fnameLen; i++)
-		(*extension)[i - dotPos - 1] = fname[i];
-	(*extension)[fnameLen - dotPos - 1] = '\0';
-
-	std::cout << "File name: " << *fileName << std::endl;
-	std::cout << "Extension: " << *extension << std::endl;
-}
-
-ClusterNo KernelFS::allocateAndSetDataCluster(char* fileName, char* extension) {
-	ClusterNo newRootDirDataCluster = ClusterAllocation::allocateCluster();
-	rootDirEntry* entry;
-
-	if (newRootDirDataCluster == 0)
-		return 0;
-
-	char* rootDirData = new char[CLUSTER_SIZE];
-
-	memset(rootDirData, 0, CLUSTER_SIZE);
-
-	entry = (rootDirEntry*)rootDirData;
-
-	for (unsigned i = 0; i < strlen(fileName); i++)
-		(*entry)[i] = fileName[i];
-
-	for (unsigned i = 0; i < strlen(extension); i++) {
-		(*entry)[i + 8] = extension[i];
-	}
-
-	partition->writeCluster(newRootDirDataCluster, rootDirData);
-
-	delete[] rootDirData;
-	return newRootDirDataCluster;
-}
-
-char KernelFS::addEntryToDataDir(ClusterNo dataCluster, char* fileName, char* extension, ClusterNo & rootDirEntryArg) {
-	char* rootDirData = new char[CLUSTER_SIZE];
-	rootDirEntry* entry;
-	bool finished = false;
-
-	if (partition->readCluster(dataCluster, rootDirData) == -1)
-		return 0;
-
-	for (int k = 0; k < ENTRIES_PER_ROOT_DIR; k++) {
-		entry = (rootDirEntry*)rootDirData + k;
-		rootDirEntryArg = k;
-
-		if ((*entry)[0] == 0) {
-			for (unsigned i = 0; i < strlen(fileName); i++)
-				(*entry)[i] = fileName[i];
-
-			for (unsigned i = 0; i < strlen(extension); i++) {
-				(*entry)[i + 8] = extension[i];
-			}
-			finished = true;
-			break;
-		}
-	}
-
-	if (finished)
-		if (partition->writeCluster(dataCluster, rootDirData) == -1)
-			return 0;
-
-	delete[] rootDirData;
-
-	if (finished)
-		return 1;
-	else
-		return 0;
-}
-
-ClusterNo KernelFS::allocateAndSetLvl2Cluster(ClusterNo dataCluster) {
-	ClusterNo newRootDirLvl2IndexCluster = ClusterAllocation::allocateCluster();
-	// check for failed allocation
-	if (newRootDirLvl2IndexCluster == 0)
-		return 0;
-
-	char* rootDirIndex2 = new char[CLUSTER_SIZE];
-
-	// set all its entries to empty, expect for the first one
-	memset(rootDirIndex2, 0, CLUSTER_SIZE);
-
-	ClusterNo* lvl2Entry = (ClusterNo*)rootDirIndex2;
-	*lvl2Entry = dataCluster;
-	partition->writeCluster(newRootDirLvl2IndexCluster, rootDirIndex2);
-
-	delete[] rootDirIndex2;
-
-	return newRootDirLvl2IndexCluster;
-}
-
 File* KernelFS::open(char* fname, char mode) {
-	char *fileName = nullptr, *extension = nullptr;
-	splitFileName(fname, &fileName, &extension);
-	if (fileName == nullptr)
-		return nullptr;
-	
-	if (mode == 'r') {
-		// file must exist in reading mode
-		if (!doesExist(fname))
-			return nullptr;
-
-		// open an existing file and set pointer to the beginning
-	}
-	if (mode == 'w') {
-		// if files exists it is truncated
-		// otherwise, new one is created
-		if (doesExist(fname))
-			deleteFile(fname);
-
-		// buffers for root directory level 1 index and
-		// root directory level 2 index
-		char* rootDirIndex1 = new char[CLUSTER_SIZE];
-		char* rootDirIndex2 = new char[CLUSTER_SIZE];
-
-		// read root directory level 1 index
-		if (partition->readCluster(rootDirLvl1Index, rootDirIndex1) == -1)
-			return nullptr;
-
-		ClusterNo* rootDirIndex2Ptr, *rootDirDataPtr;
-		bool finished = false;
-
-		ClusterNo rootDirClusterArg = 0, rootDirEntryArg = 0;
-
-		for (int i = 0; i < ENTRIES_PER_INDEX; i++) {
-			// cluster number of root directory level 2 index
-			rootDirIndex2Ptr = (ClusterNo*)rootDirIndex1 + i;
-
-			// if it exists, try placing new file entry somewhere in it
-			if (*rootDirIndex2Ptr != 0) {
-				if (partition->readCluster(*rootDirIndex2Ptr, rootDirIndex2) == -1)
-					return nullptr;
-
-				for (int j = 0; j < ENTRIES_PER_INDEX; j++) {
-					rootDirDataPtr = (ClusterNo*)rootDirIndex2 + j;
-
-					if (*rootDirDataPtr != 0) {
-						finished = addEntryToDataDir(*rootDirDataPtr, fileName, extension, rootDirEntryArg);
-						if (finished)
-							rootDirClusterArg = *rootDirDataPtr;
-					}
-					else {
-						ClusterNo dataClus = allocateAndSetDataCluster(fileName, extension);
-						// check for failure
-						if (dataClus == 0)
-							return nullptr;
-
-						*rootDirDataPtr = dataClus;
-						if (partition->writeCluster(*rootDirIndex2Ptr, rootDirIndex2) == -1)
-							return nullptr;
-
-						rootDirClusterArg = dataClus;
-						rootDirEntryArg = j;
-
-						finished = true;
-					}
-
-					if (finished)
-						break;
-				}
-			}
-			// if it does not exists, create it
-			else {
-				ClusterNo dataClus = allocateAndSetDataCluster(fileName, extension);
-				// check for failure
-				if (dataClus == 0)
-					return nullptr;
-
-				rootDirClusterArg = dataClus;
-				rootDirEntryArg = 0;
-
-				ClusterNo lvl2Clus = allocateAndSetLvl2Cluster(dataClus);
-				// check for failure
-				if (lvl2Clus == 0)
-					return nullptr;
-
-				*rootDirIndex2Ptr = lvl2Clus;
-				if (partition->writeCluster(rootDirLvl1Index, rootDirIndex1) == -1)
-					return nullptr;
-				finished = true;
-			}
-
-			if (finished)
-				break;
-		}
-
-		delete[] rootDirIndex1;
-		delete[] rootDirIndex2;
-
-		std::cout << "rootDirClusterArg: " << rootDirClusterArg << std::endl;
-		std::cout << "rootDirEntryArg: " << rootDirEntryArg << std::endl;
-
-		KernelFile* kf = new KernelFile(rootDirClusterArg, rootDirEntryArg);
-		File* newFile = new File();
-		newFile->myImpl = kf;
-		return newFile;
-	}
-	if (mode == 'a') {
-		// file must exist in append mode
-		if (!doesExist(fname))
-			return nullptr;
-
-		// open an existing file and set pointer to the end
+	if (mode == 'r')
+		openFile = new OpenRead(fname, rootDirLvl1Index);
+	if (mode == 'w')
+		openFile = new OpenWrite(fname, rootDirLvl1Index);
+	if (mode == 'a')
+		openFile = new OpenAppend(fname, rootDirLvl1Index);
+	else {
+		std::cout << "Invalid mode." << std::endl;
+		exit(1);
 	}
 
-	return nullptr;
+	File *f = new File();
+	f->myImpl = openFile->open();
+
+	return f;
 }
-
-//TODO: write functions to allocate and deallocate clusters
 
 char KernelFS::deleteFile(char* fname) {
 	// truncate it
@@ -477,11 +246,8 @@ char KernelFS::deleteFile(char* fname) {
 	return 0;
 }
 
-KernelFS::~KernelFS() {
-}
-
 char KernelFS::setLength(ClusterNo rootDirCluster, ClusterNo rootEntry, unsigned size) {
-	if (partition->readCluster(rootDirCluster, clusterBuffer) == -1)
+	if (ClusterAllocation::readCluster(rootDirCluster, clusterBuffer) == -1)
 		return 0;
 
 	rootDirEntry* entry = (rootDirEntry*)clusterBuffer + rootEntry;
@@ -489,14 +255,14 @@ char KernelFS::setLength(ClusterNo rootDirCluster, ClusterNo rootEntry, unsigned
 	unsigned* length = (unsigned*)entry + 16;
 	*length = size;
 
-	if (partition->writeCluster(rootDirCluster, clusterBuffer) == -1)
+	if (ClusterAllocation::writeCluster(rootDirCluster, clusterBuffer) == -1)
 		return 0;
 
 	return 1;
 }
 
 char KernelFS::setLvl1Index(ClusterNo rootDirCluster, ClusterNo rootEntry, ClusterNo lvl1Index) {
-	if (partition->readCluster(rootDirCluster, clusterBuffer) == -1)
+	if (ClusterAllocation::readCluster(rootDirCluster, clusterBuffer) == -1)
 		return 0;
 
 	rootDirEntry* entry = (rootDirEntry*)clusterBuffer + rootEntry;
@@ -504,42 +270,42 @@ char KernelFS::setLvl1Index(ClusterNo rootDirCluster, ClusterNo rootEntry, Clust
 	ClusterNo* lvl1 = (ClusterNo*)entry + 12;
 	*lvl1 = lvl1Index;
 
-	if (partition->writeCluster(rootDirCluster, clusterBuffer) == -1)
+	if (ClusterAllocation::writeCluster(rootDirCluster, clusterBuffer) == -1)
 		return 0;
 
 	return 1;
 }
 
 char KernelFS::setLvl2Index(ClusterNo lvl1Index, ClusterNo lvl1IndexEntry, ClusterNo lvl2Index) {
-	if (partition->readCluster(lvl1Index, clusterBuffer) == -1)
+	if (ClusterAllocation::readCluster(lvl1Index, clusterBuffer) == -1)
 		return 0;
 
 	ClusterNo* entry = (ClusterNo*)clusterBuffer + lvl1IndexEntry;
 
 	*entry = lvl2Index;
 
-	if (partition->writeCluster(lvl1Index, clusterBuffer) == -1)
+	if (ClusterAllocation::writeCluster(lvl1Index, clusterBuffer) == -1)
 		return 0;
 
 	return 1;
 }
 
 char KernelFS::setDataCluster(ClusterNo lvl2Index, ClusterNo lvl2IndexEntry, ClusterNo dataCluster) {
-	if (partition->readCluster(lvl2Index, clusterBuffer) == -1)
+	if (ClusterAllocation::readCluster(lvl2Index, clusterBuffer) == -1)
 		return 0;
 
 	ClusterNo* entry = (ClusterNo*)clusterBuffer + lvl2IndexEntry;
 
 	*entry = dataCluster;
 
-	if (partition->writeCluster(lvl2Index, clusterBuffer) == -1)
+	if (ClusterAllocation::writeCluster(lvl2Index, clusterBuffer) == -1)
 		return 0;
 
 	return 1;
 }
 
 BytesCnt KernelFS::readLength(ClusterNo rootDirCluster, ClusterNo rootEntry) {
-	if (partition->readCluster(rootDirCluster, clusterBuffer) == -1)
+	if (ClusterAllocation::readCluster(rootDirCluster, clusterBuffer) == -1)
 		return 0;
 
 	rootDirEntry* entry = (rootDirEntry*)clusterBuffer + rootEntry;

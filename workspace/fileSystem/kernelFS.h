@@ -2,53 +2,47 @@
 #include <string.h>
 #include <unordered_map>
 #include <string>
+#include <iostream>
 #include "sem.h"
 #include "part.h"
 #include "utils.h"
 #include "file.h"
 #include "kernelFile.h"
 #include "clusterAllocation.h"
+#include "OpenFileStrategy.h"
+#include "OpenAppend.h"
+#include "OpenRead.h"
+#include "OpenWrite.h"
 
 class File;
 class KernelFile;
+class OpenFileStrategy;
 
 class KernelFS {
 public:
-    // allocate space for clusterBuffer
-    KernelFS(); 
-
     // returns 1 for success and 0 for failure
     static char mount(Partition* partition); 
-
     // returns 1 for success and 0 for failure
     static char unmount();  
-
     // returns 1 for success and 0 for failure
     static char format(); 
 
     // returns number of files for success and -1 for failure
     static FileCnt readRootDir();
-    
     // fname is aboslute filepath of a file
     // returns 1 if such a file exists, 0 otherwise
     static char doesExist(char* fname); 
     
     // description
     static File* open(char* fname, char mode);
-
     // description
     static char deleteFile(char* fname);
-
-    // deallocate space for clusterBuffer
-    ~KernelFS();
 
     static char setLength(ClusterNo, ClusterNo, unsigned);
     static char setLvl1Index(ClusterNo, ClusterNo, ClusterNo);
     static char setLvl2Index(ClusterNo, ClusterNo, ClusterNo);
     static char setDataCluster(ClusterNo, ClusterNo, ClusterNo);
-
     static BytesCnt readLength(ClusterNo, ClusterNo);
-
 private:
     // pointer to a Partition object which abstracts
     // Windows 10 x64 API towards hard disk
@@ -80,9 +74,6 @@ private:
 
     static std::unordered_map<std::string, File*> openFiles;
 
-    static ClusterNo allocateAndSetDataCluster(char*, char*);
-    static ClusterNo allocateAndSetLvl2Cluster(ClusterNo);
-    static char addEntryToDataDir(ClusterNo, char*, char*, ClusterNo &);
-    static void splitFileName(char*, char**, char**);
+    static OpenFileStrategy* openFile;
 };
 

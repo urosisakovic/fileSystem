@@ -1,5 +1,4 @@
 #include "clusterAllocation.h"
-#include <iostream>
 
 Partition* ClusterAllocation::partition = nullptr;
 char* ClusterAllocation::bitVector = nullptr;
@@ -73,4 +72,5 @@ char ClusterAllocation::deallocateCluster(ClusterNo freeClusterIdx) {
 		return 0;
 
 	markDeallocated(freeClusterIdx);
+	return 1;
 }
