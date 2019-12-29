@@ -81,7 +81,7 @@ char KernelFS::format() {
 
 	// update bit vector in KernelFS object
 	unsigned char allSet = 0;
-	for (int i = 0; i < 7; i++)
+	for (int i = 0; i < 8; i++)
 		allSet += 1 << i;
 
 	for (unsigned i = 0; i < bitVectorByteSize; bitVector[i++] = allSet);
@@ -478,12 +478,15 @@ char KernelFS::deleteFile(char* fname) {
 KernelFS::~KernelFS() {
 }
 
+//TODO: Don't always set to 0.
 ClusterNo KernelFS::allocateCluster() {
 	for (ClusterNo i = 1; i < clusterCount; i++) {
 		if (!checkAllocated(i)) {
 			markAllocated(i);
 			std::cout << "Allocated cluster: " << i << std::endl;
-			// system("pause");
+			memset(clusterBuffer, 0, CLUSTER_SIZE);
+			writeCluster(i, clusterBuffer);
+
 			return i;
 		}
 	}
