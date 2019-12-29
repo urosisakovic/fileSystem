@@ -2,6 +2,8 @@
 #include "utils.h"
 #include "kernelFile.h"
 #include "kernelFS.h"
+#include "clusterAllocation.h"
+
 
 class FilePointer {
 private:

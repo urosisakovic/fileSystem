@@ -3,6 +3,7 @@
 #include "part.h"
 #include "kernelFS.h"
 #include "fileptr.h"
+#include "clusterAllocation.h"
 
 class KernelFS;
 class FilePointer;

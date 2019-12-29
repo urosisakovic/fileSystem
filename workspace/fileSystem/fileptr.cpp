@@ -32,7 +32,7 @@ char FilePointer::GoToNextCluster() {
 	if (lvl2IndexEntry < ENTRIES_PER_INDEX - 1) {
 		lvl2IndexEntry++;
 
-		if (KernelFS::readCluster(lvl2IndexCluster, clusterBuffer) == -1)
+		if (ClusterAllocation::readCluster(lvl2IndexCluster, clusterBuffer) == -1)
 			return 0;
 
 		ClusterNo* dataClustPtr = (ClusterNo*)clusterBuffer + lvl2IndexEntry;
@@ -41,7 +41,7 @@ char FilePointer::GoToNextCluster() {
 		pos = 0;
 
 		if (dataCluster == 0) {
-			dataCluster = KernelFS::allocateCluster();
+			dataCluster = ClusterAllocation::allocateCluster();
 			KernelFS::setDataCluster(lvl2IndexCluster, lvl2IndexEntry, dataCluster);
 		}
 
@@ -51,7 +51,7 @@ char FilePointer::GoToNextCluster() {
 	// lvl2IndexEntry == ENTRIES_PER_INDEX - 1
 	lvl1IndexEntry++;
 
-	if (KernelFS::readCluster(lvl1IndexCluster, clusterBuffer) == -1)
+	if (ClusterAllocation::readCluster(lvl1IndexCluster, clusterBuffer) == -1)
 		return 0;
 
 	ClusterNo* lvl2IndexPtr = (ClusterNo*)clusterBuffer + lvl1IndexEntry;
@@ -60,10 +60,10 @@ char FilePointer::GoToNextCluster() {
 	pos = 0;
 
 	if (lvl2IndexCluster == 0) {
-		lvl2IndexCluster = KernelFS::allocateCluster();
+		lvl2IndexCluster = ClusterAllocation::allocateCluster();
 		lvl2IndexEntry = 0;
 
-		dataCluster = KernelFS::allocateCluster();
+		dataCluster = ClusterAllocation::allocateCluster();
 		pos = 0;
 
 		KernelFS::setLvl2Index(lvl1IndexCluster, lvl1IndexEntry, lvl2IndexCluster);
@@ -77,13 +77,13 @@ void FilePointer::ensureDataCluster() {
 	if (lvl1IndexCluster != 0)
 		return;
 	
-	lvl1IndexCluster = KernelFS::allocateCluster();
+	lvl1IndexCluster = ClusterAllocation::allocateCluster();
 	lvl1IndexEntry = 0;
 
-	lvl2IndexCluster = KernelFS::allocateCluster();
+	lvl2IndexCluster = ClusterAllocation::allocateCluster();
 	lvl2IndexEntry = 0;
 
-	dataCluster = KernelFS::allocateCluster();
+	dataCluster = ClusterAllocation::allocateCluster();
 	pos = 0;
 
 	KernelFS::setLvl1Index(rootDirCluster, rootDirEntry, lvl1IndexCluster);

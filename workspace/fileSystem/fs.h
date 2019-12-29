@@ -2,6 +2,8 @@
 #include "kernelFS.h"
 #include "part.h"
 #include "file.h"
+#include "clusterAllocation.h"
+
 
 class FS {
 public:

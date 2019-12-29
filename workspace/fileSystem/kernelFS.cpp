@@ -33,6 +33,8 @@ char KernelFS::mount(Partition* partition) {
 
 	KernelFS::partition = partition;
 
+	ClusterAllocation::setPartition(partition);
+
 	clusterCount = partition->getNumOfClusters();
 	// determine length of bit vector and allocate it
 	bitVectorClusterSize = 1;
@@ -43,14 +45,14 @@ char KernelFS::mount(Partition* partition) {
 	bitVectorByteSize = bitVectorClusterSize * CLUSTER_SIZE;
 	bitVector = new char[bitVectorByteSize];
 	
-	// TODO: Use memset here.
 	// read bit vector
 	for (ClusterNo i = 0; i < bitVectorClusterSize; i++) {
 		if (partition->readCluster(i, clusterBuffer) == -1)
 			return 0;
-		for (int j = 0; j < CLUSTER_SIZE; j++)
-			bitVector[i * CLUSTER_SIZE + j] = clusterBuffer[j];
+		memcpy(bitVector + i * CLUSTER_SIZE, clusterBuffer, CLUSTER_SIZE);
 	}
+
+	ClusterAllocation::setBitVector(bitVectorByteSize, bitVector);
 	
 	// set root directory index
 	rootDirLvl1Index = bitVectorClusterSize;
@@ -86,8 +88,8 @@ char KernelFS::format() {
 
 	for (unsigned i = 0; i < bitVectorByteSize; bitVector[i++] = allSet);
 	for (unsigned i = 0; i < bitVectorClusterSize; i++)
-		markAllocated(i);
-	markAllocated(rootDirLvl1Index);
+		ClusterAllocation::markAllocated(i);
+	ClusterAllocation::markAllocated(rootDirLvl1Index);
 
 	// update bit vector on disk
 	for (unsigned i = 0; i < bitVectorClusterSize; i++) {
@@ -269,7 +271,7 @@ void KernelFS::splitFileName(char* fname, char** fileName, char** extension) {
 }
 
 ClusterNo KernelFS::allocateAndSetDataCluster(char* fileName, char* extension) {
-	ClusterNo newRootDirDataCluster = allocateCluster();
+	ClusterNo newRootDirDataCluster = ClusterAllocation::allocateCluster();
 	rootDirEntry* entry;
 
 	if (newRootDirDataCluster == 0)
@@ -331,7 +333,7 @@ char KernelFS::addEntryToDataDir(ClusterNo dataCluster, char* fileName, char* ex
 }
 
 ClusterNo KernelFS::allocateAndSetLvl2Cluster(ClusterNo dataCluster) {
-	ClusterNo newRootDirLvl2IndexCluster = allocateCluster();
+	ClusterNo newRootDirLvl2IndexCluster = ClusterAllocation::allocateCluster();
 	// check for failed allocation
 	if (newRootDirLvl2IndexCluster == 0)
 		return 0;
@@ -478,29 +480,6 @@ char KernelFS::deleteFile(char* fname) {
 KernelFS::~KernelFS() {
 }
 
-//TODO: Don't always set to 0.
-ClusterNo KernelFS::allocateCluster() {
-	for (ClusterNo i = 1; i < clusterCount; i++) {
-		if (!checkAllocated(i)) {
-			markAllocated(i);
-			std::cout << "Allocated cluster: " << i << std::endl;
-			memset(clusterBuffer, 0, CLUSTER_SIZE);
-			writeCluster(i, clusterBuffer);
-
-			return i;
-		}
-	}
-
-	return 0;
-}
-
-char KernelFS::deallocateCluster(ClusterNo freeClusterIdx) {
-	if (checkAllocated(freeClusterIdx))
-		return 0;
-
-	markDeallocated(freeClusterIdx);
-}
-
 char KernelFS::setLength(ClusterNo rootDirCluster, ClusterNo rootEntry, unsigned size) {
 	if (partition->readCluster(rootDirCluster, clusterBuffer) == -1)
 		return 0;
@@ -568,36 +547,4 @@ BytesCnt KernelFS::readLength(ClusterNo rootDirCluster, ClusterNo rootEntry) {
 	BytesCnt* length = (BytesCnt*)entry + 16;
 	
 	return *length;
-}
-
-int KernelFS::readCluster(ClusterNo cluster, char* buffer) {
-	return partition->readCluster(cluster, buffer);
-}
-
-int KernelFS::writeCluster(ClusterNo cluster, const char* buffer) {
-	return partition->writeCluster(cluster, buffer);
-}
-
-void KernelFS::markAllocated(ClusterNo clusterId) {
-	unsigned correspondingByte = clusterId / 8;
-	unsigned correspondingBit = 7 - clusterId % 8;
-
-	bitVector[correspondingByte] &= ~(1 << correspondingBit);
-}
-
-void KernelFS::markDeallocated(ClusterNo clusterId) {
-	unsigned correspondingByte = clusterId / 8;
-	unsigned correspondingBit = 7 - clusterId % 8;
-
-	bitVector[correspondingByte] |= (1 << correspondingBit);
-}
-
-char KernelFS::checkAllocated(ClusterNo clusterId) {
-	unsigned correspondingByte = clusterId / 8;
-	unsigned correspondingBit = 7 - clusterId % 8;
-
-	if (correspondingByte >= bitVectorByteSize)
-		return -1;
-
-	return ((bitVector[correspondingByte] & (1 << correspondingBit)) == 0);
 }

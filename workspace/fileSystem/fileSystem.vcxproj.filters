@@ -39,6 +39,9 @@
     <ClInclude Include="fileptr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="clusterAllocation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="file.cpp">
@@ -63,6 +66,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="fileptr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="clusterAllocation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

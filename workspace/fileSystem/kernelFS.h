@@ -7,6 +7,7 @@
 #include "utils.h"
 #include "file.h"
 #include "kernelFile.h"
+#include "clusterAllocation.h"
 
 class File;
 class KernelFile;
@@ -41,13 +42,6 @@ public:
     // deallocate space for clusterBuffer
     ~KernelFS();
 
-    // returns number of allocated cluster in case of success
-    // otherwise, returns 0 (cannot be allocated since bit vector is there)
-    static ClusterNo allocateCluster();
-
-    // returns 1 in case of success, 0 otherwise
-    static char deallocateCluster(ClusterNo);
-
     static char setLength(ClusterNo, ClusterNo, unsigned);
     static char setLvl1Index(ClusterNo, ClusterNo, ClusterNo);
     static char setLvl2Index(ClusterNo, ClusterNo, ClusterNo);
@@ -55,8 +49,6 @@ public:
 
     static BytesCnt readLength(ClusterNo, ClusterNo);
 
-    static int readCluster(ClusterNo, char* buffer);
-    static int writeCluster(ClusterNo, const char* buffer);
 private:
     // pointer to a Partition object which abstracts
     // Windows 10 x64 API towards hard disk
@@ -71,13 +63,6 @@ private:
     static unsigned bitVectorByteSize;
     // cluster size of bit vector
     static ClusterNo bitVectorClusterSize;
-
-    // sets corresponding bit in bit vector
-    static void markAllocated(ClusterNo);
-    // clears corresponding bit in bit vector
-    static void markDeallocated(ClusterNo);
-    // returns 1 if cluster is allocated, 0 if it is free and -1 in case of an error
-    static char checkAllocated(ClusterNo);
 
     // number of cluster containing level 1 index of root directory
     // equal to bitVectorClusterCount

@@ -95,15 +95,15 @@ void test2() {
 
 	urosFile->write(LEN, wb);
 
-	//urosFile->seek(0);
+	urosFile->seek(0);
 
-	//char* rb = new char[LEN];
-	//urosFile->read(LEN, rb);
-	//
-	//check(wb, rb, LEN);
+	char* rb = new char[LEN];
+	urosFile->read(LEN, rb);
+	
+	check(wb, rb, LEN);
 
-	//for (int i = 0; i < 20; i++)
-	//	std::cout << int(rb[i]) << " ";
+	for (int i = 0; i < 20; i++)
+		std::cout << int(rb[i]) << " ";
 
 }
 

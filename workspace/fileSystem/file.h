@@ -1,6 +1,8 @@
 #pragma once
 #include "kernelFile.h"
 #include "kernelFS.h"
+#include "clusterAllocation.h"
+
 
 class KernelFile;
 
@@ -19,7 +21,7 @@ private:
 	KernelFile* myImpl;
 	//objekat fajla se može kreirati samo otvaranjem
 
-	File() {}
+	File() : myImpl(nullptr) {}
 
 	friend class FS;
 	friend class KernelFS;
