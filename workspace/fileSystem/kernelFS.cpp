@@ -556,6 +556,17 @@ char KernelFS::setDataCluster(ClusterNo lvl2Index, ClusterNo lvl2IndexEntry, Clu
 	return 1;
 }
 
+BytesCnt KernelFS::readLength(ClusterNo rootDirCluster, ClusterNo rootEntry) {
+	if (partition->readCluster(rootDirCluster, clusterBuffer) == -1)
+		return 0;
+
+	rootDirEntry* entry = (rootDirEntry*)clusterBuffer + rootEntry;
+
+	BytesCnt* length = (BytesCnt*)entry + 16;
+	
+	return *length;
+}
+
 int KernelFS::readCluster(ClusterNo cluster, char* buffer) {
 	return partition->readCluster(cluster, buffer);
 }

@@ -53,6 +53,8 @@ public:
     static char setLvl2Index(ClusterNo, ClusterNo, ClusterNo);
     static char setDataCluster(ClusterNo, ClusterNo, ClusterNo);
 
+    static BytesCnt readLength(ClusterNo, ClusterNo);
+
     static int readCluster(ClusterNo, char* buffer);
     static int writeCluster(ClusterNo, const char* buffer);
 private:

@@ -88,17 +88,22 @@ void test2() {
 
 	File *urosFile = k->open((char*)"uros.txt", 'w');
 
-	const int LEN = 2049;
+	const int LEN = 100000;
 
 	char* wb = new char[LEN];
 	for (int i = 0; i < LEN; wb[i++] = i);
 
 	urosFile->write(LEN, wb);
 
+	urosFile->seek(0);
+
 	char* rb = new char[LEN];
 	urosFile->read(LEN, rb);
 	
 	check(wb, rb, LEN);
+
+	for (int i = 0; i < 20; i++)
+		std::cout << int(rb[i]) << " ";
 
 }
 

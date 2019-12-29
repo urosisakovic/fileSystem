@@ -5,7 +5,7 @@ KernelFile::KernelFile(ClusterNo rootDirCluster, ClusterNo rootDirEntry) {
 
 	this->clusterBuffer = new char[CLUSTER_SIZE];
 
-	this->size = 0;
+	this->size = getFileSize();
 }
 
 KernelFile::~KernelFile() {
@@ -19,6 +19,9 @@ char KernelFile::write(BytesCnt bytesCnt, char* buffer) {
 	
 	filePtr->ensureDataCluster();
 
+	if (filePos() > getFileSize())
+		KernelFS::setLength(filePtr->rootDirCluster, filePtr->rootDirEntry, filePos());
+
 	unsigned currClusterFree = CLUSTER_SIZE - filePtr->pos;
 
 	if (bytesCnt <= currClusterFree) {
@@ -28,6 +31,10 @@ char KernelFile::write(BytesCnt bytesCnt, char* buffer) {
 		if (KernelFS::writeCluster(filePtr->dataCluster, clusterBuffer) == -1)
 			return 0;
 
+		filePtr->pos += bytesCnt;
+
+		if (filePos() > getFileSize())
+			KernelFS::setLength(filePtr->rootDirCluster, filePtr->rootDirEntry, filePos());
 		return 1;
 	}
 
@@ -57,6 +64,10 @@ char KernelFile::write(BytesCnt bytesCnt, char* buffer) {
 	if (KernelFS::writeCluster(filePtr->dataCluster, clusterBuffer) == -1)
 		return 0;
 
+	filePtr->pos += bytesCnt - bufferPtr;
+
+	if (filePos() > getFileSize())
+		KernelFS::setLength(filePtr->rootDirCluster, filePtr->rootDirEntry, filePos());
 	return 1;
 }
 
@@ -71,6 +82,8 @@ BytesCnt KernelFile::read(BytesCnt bytesCnt, char* buffer) {
 			return 0;
 		memcpy(buffer, clusterBuffer + filePtr->pos, bytesCnt);
 		
+		filePtr->pos += bytesCnt;
+
 		return 1;
 	}
 
@@ -93,17 +106,39 @@ BytesCnt KernelFile::read(BytesCnt bytesCnt, char* buffer) {
 	if (KernelFS::readCluster(filePtr->dataCluster, clusterBuffer) == -1)
 		return 0;
 	memcpy(buffer + bufferPtr, clusterBuffer, bytesCnt - bufferPtr);
+
+	filePtr->pos += bytesCnt - bufferPtr;
 	
 	return 1;
 }
 
+// TODO: Check if new position is inside the file.
 char KernelFile::seek(BytesCnt bytesCnt) {
-	// same stuff as in write and read
-	return 0;
+	filePtr->lvl1IndexEntry = bytesCnt / (1 << 22);
+
+	if (KernelFS::readCluster(filePtr->lvl1IndexCluster, clusterBuffer) == -1)
+		return 0;
+	ClusterNo* lvl2IndexClusterPtr = (ClusterNo*)clusterBuffer + filePtr->lvl1IndexEntry;
+	filePtr->lvl2IndexCluster = *lvl2IndexClusterPtr;
+
+	bytesCnt -= filePtr->lvl1IndexEntry * (1 << 22);
+
+	filePtr->lvl2IndexEntry = bytesCnt / (1 << 11);;
+
+	if (KernelFS::readCluster(filePtr->lvl2IndexCluster, clusterBuffer) == -1)
+		return 0;
+	ClusterNo* dataClusterPtr = (ClusterNo*)clusterBuffer + filePtr->lvl2IndexEntry;
+	filePtr->dataCluster = *dataClusterPtr;
+
+	bytesCnt -= filePtr->lvl2IndexEntry * (1 << 11);
+
+	filePtr->pos = bytesCnt;
+
+	return 1;
 }
 
 BytesCnt KernelFile::filePos() {
-	return 0;
+	return filePtr->byteOffset();
 }
 
 char KernelFile::eof() {
@@ -112,10 +147,7 @@ char KernelFile::eof() {
 }
 
 BytesCnt KernelFile::getFileSize() {
-	// sum all lvl1 entry sizes
-	// sum all of last lvl2 entry sizes
-	// sum all of data size in last entry of last lvl2Index
-	return BytesCnt();
+	return KernelFS::readLength(filePtr->rootDirCluster, filePtr->rootDirEntry);
 }
 
 char KernelFile::truncate() {

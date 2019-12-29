@@ -22,6 +22,6 @@ public:
 private:
 	FilePointer *filePtr;
 	char *clusterBuffer;
-	unsigned size = 0;
+	BytesCnt size;
 };
 

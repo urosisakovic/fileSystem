@@ -10,11 +10,9 @@ private:
 
 	ClusterNo lvl1IndexCluster;
 	ClusterNo lvl1IndexEntry;
-	ClusterNo lvl1IndexSize;
 
 	ClusterNo lvl2IndexCluster;
 	ClusterNo lvl2IndexEntry;
-	ClusterNo lvl2IndexSize;
 
 	ClusterNo dataCluster;
 	unsigned pos;
@@ -25,6 +23,8 @@ public:
 
 	char GoToNextCluster();
 	void ensureDataCluster();
+
+	BytesCnt byteOffset();
 
 	friend class KernelFile;
 };
