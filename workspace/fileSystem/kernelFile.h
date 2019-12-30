@@ -25,5 +25,7 @@ private:
 	FilePointer *filePtr;
 	char *clusterBuffer;
 	BytesCnt size;
+
+	friend class KernelFS;
 };
 

@@ -41,6 +41,20 @@ BytesCnt FileSystemUtils::readLength(ClusterNo rootDirCluster, ClusterNo rootEnt
 	return *length;
 }
 
+char FileSystemUtils::emptyRootDirEntry(ClusterNo rootDirCluster, ClusterNo rootEntry) {
+	if (ClusterAllocation::readCluster(rootDirCluster, clusterBuffer) == -1)
+		return 0;
+
+	rootDirEntry* entry = (rootDirEntry*)clusterBuffer + rootEntry;
+
+	memset(entry, 0, ROOT_DIR_ENTRY_SIZE);
+
+	if (ClusterAllocation::writeCluster(rootDirCluster, clusterBuffer) == -1)
+		return 0;
+
+	return 1;
+}
+
 char FileSystemUtils::setLength(ClusterNo rootDirCluster, ClusterNo rootEntry, unsigned size) {
 	if (ClusterAllocation::readCluster(rootDirCluster, clusterBuffer) == -1)
 		return 0;

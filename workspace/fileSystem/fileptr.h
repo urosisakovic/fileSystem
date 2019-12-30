@@ -6,6 +6,18 @@
 #include "clusterAllocation.h"
 
 class FilePointer {
+public:
+	FilePointer() = default;
+	FilePointer(ClusterNo rootDirCluster, ClusterNo rootDirEntry);
+
+	char GoToNextCluster();
+	void ensureDataCluster();
+
+	BytesCnt byteOffset();
+
+	ClusterNo getRootDirCluster() { return this->rootDirCluster; }
+	ClusterNo getRootDirEntry() { return this->rootDirEntry; }
+
 private:
 	ClusterNo rootDirCluster;
 	ClusterNo rootDirEntry;
@@ -18,15 +30,6 @@ private:
 
 	ClusterNo dataCluster;
 	unsigned pos;
-
-public:
-	FilePointer() = default;
-	FilePointer(ClusterNo rootDirCluster, ClusterNo rootDirEntry);
-
-	char GoToNextCluster();
-	void ensureDataCluster();
-
-	BytesCnt byteOffset();
 
 	friend class KernelFile;
 };

@@ -9,6 +9,7 @@
 #include "file.h"
 #include "kernelFile.h"
 #include "clusterAllocation.h"
+#include "fileptr.h"
 
 class File;
 class KernelFile;
@@ -63,7 +64,7 @@ private:
     // blocks unmounting and formatting if there are open files
     static Semaphore* allFilesClosed;
 
-    static std::unordered_map<std::string, File*> openFiles;
+    static std::unordered_map<std::string, File*> *openFiles;
 
     static OpenFileStrategy* openFile;
 };

@@ -11,20 +11,16 @@
 
 // initialize static variables
 Partition* KernelFS::partition = nullptr;
-
 ClusterNo KernelFS::clusterCount = 0;
-
 char* KernelFS::bitVector = nullptr;
 unsigned KernelFS::bitVectorByteSize = 0;
 ClusterNo KernelFS::bitVectorClusterSize = 0;
 ClusterNo KernelFS::rootDirLvl1Index = 0;
-
 char* KernelFS::clusterBuffer = new char[CLUSTER_SIZE];
-
 Semaphore* KernelFS::mountSem = new Semaphore();
 Semaphore* KernelFS::allFilesClosed = new Semaphore();
-
 OpenFileStrategy* KernelFS::openFile = nullptr;
+std::unordered_map<std::string, File*>* KernelFS::openFiles = new std::unordered_map<std::string, File*>();
 
 // TODO: If other thread tries to mount that same partition, 
 //		 what should happen?
@@ -247,7 +243,16 @@ File* KernelFS::open(char* fname, char mode) {
 }
 
 char KernelFS::deleteFile(char* fname) {
-	// truncate it
-	// update corresponding root dir entry
-	return 0;
+	if (openFiles->find(fname) == openFiles->end())
+		return 0;
+
+	(*openFiles)[fname]->truncate;
+
+	ClusterNo rootDirCluster = (*openFiles)[fname]->myImpl->filePtr->getRootDirCluster();
+	ClusterNo rootDirEntry = (*openFiles)[fname]->myImpl->filePtr->getRootDirEntry();
+
+	if (FileSystemUtils::emptyRootDirEntry(rootDirCluster, rootDirEntry) == 0)
+		return 0;
+
+	return 1;
 }
