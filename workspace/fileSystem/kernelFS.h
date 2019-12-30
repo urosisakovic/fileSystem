@@ -34,11 +34,6 @@ public:
     // description
     static char deleteFile(char* fname);
 
-    static char setLength(ClusterNo, ClusterNo, unsigned);
-    static char setLvl1Index(ClusterNo, ClusterNo, ClusterNo);
-    static char setLvl2Index(ClusterNo, ClusterNo, ClusterNo);
-    static char setDataCluster(ClusterNo, ClusterNo, ClusterNo);
-    static BytesCnt readLength(ClusterNo, ClusterNo);
 private:
     // pointer to a Partition object which abstracts
     // Windows 10 x64 API towards hard disk

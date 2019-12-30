@@ -20,7 +20,7 @@ char KernelFile::write(BytesCnt bytesCnt, char* buffer) {
 	filePtr->ensureDataCluster();
 
 	if (filePos() > getFileSize())
-		KernelFS::setLength(filePtr->rootDirCluster, filePtr->rootDirEntry, filePos());
+		FileSystemUtils::setLength(filePtr->rootDirCluster, filePtr->rootDirEntry, filePos());
 
 	unsigned currClusterFree = CLUSTER_SIZE - filePtr->pos;
 
@@ -34,7 +34,7 @@ char KernelFile::write(BytesCnt bytesCnt, char* buffer) {
 		filePtr->pos += bytesCnt;
 
 		if (filePos() > getFileSize())
-			KernelFS::setLength(filePtr->rootDirCluster, filePtr->rootDirEntry, filePos());
+			FileSystemUtils::setLength(filePtr->rootDirCluster, filePtr->rootDirEntry, filePos());
 		return 1;
 	}
 
@@ -67,7 +67,7 @@ char KernelFile::write(BytesCnt bytesCnt, char* buffer) {
 	filePtr->pos += bytesCnt - bufferPtr;
 
 	if (filePos() > getFileSize())
-		KernelFS::setLength(filePtr->rootDirCluster, filePtr->rootDirEntry, filePos());
+		FileSystemUtils::setLength(filePtr->rootDirCluster, filePtr->rootDirEntry, filePos());
 	return 1;
 }
 
@@ -148,7 +148,7 @@ char KernelFile::eof() {
 }
 
 BytesCnt KernelFile::getFileSize() {
-	return KernelFS::readLength(filePtr->rootDirCluster, filePtr->rootDirEntry);
+	return FileSystemUtils::readLength(filePtr->rootDirCluster, filePtr->rootDirEntry);
 }
 
 char KernelFile::truncate() {
@@ -189,7 +189,7 @@ char KernelFile::truncate() {
 		*lvl1Ptr = 0;
 	}
 
-	KernelFS::setLength(filePtr->rootDirCluster, filePtr->rootDirEntry, 0);
+	FileSystemUtils::setLength(filePtr->rootDirCluster, filePtr->rootDirEntry, 0);
 
 	return 1;
 	

@@ -41,7 +41,7 @@ char FilePointer::GoToNextCluster() {
 
 		if (dataCluster == 0) {
 			dataCluster = ClusterAllocation::allocateCluster();
-			KernelFS::setDataCluster(lvl2IndexCluster, lvl2IndexEntry, dataCluster);
+			FileSystemUtils::setDataCluster(lvl2IndexCluster, lvl2IndexEntry, dataCluster);
 		}
 
 		return 1;
@@ -65,8 +65,8 @@ char FilePointer::GoToNextCluster() {
 		dataCluster = ClusterAllocation::allocateCluster();
 		pos = 0;
 
-		KernelFS::setLvl2Index(lvl1IndexCluster, lvl1IndexEntry, lvl2IndexCluster);
-		KernelFS::setDataCluster(lvl2IndexCluster, lvl2IndexEntry, dataCluster);
+		FileSystemUtils::setLvl2Index(lvl1IndexCluster, lvl1IndexEntry, lvl2IndexCluster);
+		FileSystemUtils::setDataCluster(lvl2IndexCluster, lvl2IndexEntry, dataCluster);
 	}
 
 	return 1;
@@ -85,9 +85,9 @@ void FilePointer::ensureDataCluster() {
 	dataCluster = ClusterAllocation::allocateCluster();
 	pos = 0;
 
-	KernelFS::setLvl1Index(rootDirCluster, rootDirEntry, lvl1IndexCluster);
-	KernelFS::setLvl2Index(lvl1IndexCluster, lvl1IndexEntry, lvl2IndexCluster);
-	KernelFS::setDataCluster(lvl2IndexCluster, lvl2IndexEntry, dataCluster);
+	FileSystemUtils::setLvl1Index(rootDirCluster, rootDirEntry, lvl1IndexCluster);
+	FileSystemUtils::setLvl2Index(lvl1IndexCluster, lvl1IndexEntry, lvl2IndexCluster);
+	FileSystemUtils::setDataCluster(lvl2IndexCluster, lvl2IndexEntry, dataCluster);
 }
 
 BytesCnt FilePointer::byteOffset() {

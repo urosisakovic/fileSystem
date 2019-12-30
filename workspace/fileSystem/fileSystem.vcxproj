@@ -143,6 +143,7 @@
     <ClInclude Include="clusterAllocation.h" />
     <ClInclude Include="file.h" />
     <ClInclude Include="fileptr.h" />
+    <ClInclude Include="FileSystemUtils.h" />
     <ClInclude Include="fs.h" />
     <ClInclude Include="kernelFile.h" />
     <ClInclude Include="kernelFS.h" />
@@ -158,6 +159,7 @@
     <ClCompile Include="clusterAllocation.cpp" />
     <ClCompile Include="file.cpp" />
     <ClCompile Include="fileptr.cpp" />
+    <ClCompile Include="FileSystemUtils.cpp" />
     <ClCompile Include="fs.cpp" />
     <ClCompile Include="kernelFile.cpp" />
     <ClCompile Include="kernelFS.cpp" />
