@@ -5,15 +5,15 @@ OpenWrite::OpenWrite(char* fname, ClusterNo rootLvl1Index) :
 
 
 KernelFile* OpenWrite::open() {
-	char* fileName = nullptr, * extension = nullptr;
-	splitFileName(fname, &fileName, &extension);
-	if (fileName == nullptr)
-		return nullptr;
-
 	// if files exists it is truncated
 	// otherwise, new one is created
 	if (KernelFS::doesExist(fname))
 		KernelFS::deleteFile(fname);
+	
+	char* fileName = nullptr, * extension = nullptr;
+	splitFileName(fname, &fileName, &extension);
+	if (fileName == nullptr)
+		return nullptr;
 
 	// buffers for root directory level 1 index and
 	// root directory level 2 index
@@ -94,5 +94,5 @@ KernelFile* OpenWrite::open() {
 	delete[] rootDirIndex1;
 	delete[] rootDirIndex2;
 
-	return new KernelFile(rootDirClusterArg, rootDirEntryArg);
+	return new KernelFile(rootDirClusterArg, rootDirEntryArg, true);
 }

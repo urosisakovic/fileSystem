@@ -11,7 +11,7 @@ class FilePointer;
 
 class KernelFile {
 public:
-	KernelFile(ClusterNo, ClusterNo);
+	KernelFile(ClusterNo, ClusterNo, bool);
 	~KernelFile(); //zatvaranje fajla   
 	char write(BytesCnt, char*);
 	BytesCnt read(BytesCnt, char*);
@@ -25,6 +25,7 @@ private:
 	FilePointer *filePtr;
 	char *clusterBuffer;
 	BytesCnt size;
+	bool canWrite;
 
 	friend class KernelFS;
 };

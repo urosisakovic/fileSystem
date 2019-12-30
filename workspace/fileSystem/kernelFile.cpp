@@ -1,9 +1,11 @@
 #include "kernelFile.h"
 
-KernelFile::KernelFile(ClusterNo rootDirCluster, ClusterNo rootDirEntry) {
+KernelFile::KernelFile(ClusterNo rootDirCluster, ClusterNo rootDirEntry, bool canWrite) {
 	this->filePtr = new FilePointer(rootDirCluster, rootDirEntry);
 
 	this->clusterBuffer = new char[CLUSTER_SIZE];
+
+	this->canWrite = canWrite;
 
 	this->size = getFileSize();
 }
@@ -14,6 +16,9 @@ KernelFile::~KernelFile() {
 }
 
 char KernelFile::write(BytesCnt bytesCnt, char* buffer) {
+	if (!canWrite)
+		return 0;
+	
 	if (bytesCnt == 0)
 		return 1;
 	
