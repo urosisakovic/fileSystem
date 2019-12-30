@@ -20,7 +20,7 @@ public:
 	char eof();
 	BytesCnt getFileSize();
 	char truncate();
-
+	void disableWriting() { canWrite = false; }
 private:
 	FilePointer *filePtr;
 	char *clusterBuffer;

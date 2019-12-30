@@ -7,7 +7,7 @@ class KernelFile;
 
 class OpenFileStrategy {
 public:
-	virtual KernelFile* open() = 0;
+	virtual KernelFile* open();
 
 	static ClusterNo allocateAndSetDataCluster(char*, char*);
 	static ClusterNo allocateAndSetLvl2Cluster(ClusterNo);

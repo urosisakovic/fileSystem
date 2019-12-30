@@ -246,7 +246,7 @@ char KernelFS::deleteFile(char* fname) {
 	if (openFiles->find(fname) == openFiles->end())
 		return 0;
 
-	(*openFiles)[fname]->truncate;
+	(*openFiles)[fname]->truncate();
 
 	ClusterNo rootDirCluster = (*openFiles)[fname]->myImpl->filePtr->getRootDirCluster();
 	ClusterNo rootDirEntry = (*openFiles)[fname]->myImpl->filePtr->getRootDirEntry();
