@@ -1,13 +1,10 @@
 #pragma once
 #include "OpenFileStrategy.h"
-#include "kernelFile.h"
-
-class KernelFile;
 
 class OpenRead :
 	public OpenFileStrategy {
 public:
-	KernelFile* open();
+	KernelFile* open() override;
 	OpenRead(char*, ClusterNo);
 };
 

@@ -9,7 +9,6 @@
 #include "file.h"
 #include "kernelFile.h"
 #include "clusterAllocation.h"
-#include "OpenFileStrategy.h"
 #include "OpenAppend.h"
 #include "OpenRead.h"
 #include "OpenWrite.h"

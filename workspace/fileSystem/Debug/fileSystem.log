@@ -5,16 +5,25 @@
   kernelFS.cpp
   main.cpp
   OpenAppend.cpp
-C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenRead.h(8,26): error C2504: 'OpenFileStrategy': base class undefined
-C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenWrite.h(8,26): error C2504: 'OpenFileStrategy': base class undefined
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenRead.h(5,26): error C2504: 'OpenFileStrategy': base class undefined
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenRead.h(7,14): error C3668: 'OpenRead::open': method with override specifier 'override' did not override any base class methods
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenWrite.h(5,26): error C2504: 'OpenFileStrategy': base class undefined
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenWrite.h(7,14): error C3668: 'OpenWrite::open': method with override specifier 'override' did not override any base class methods
   OpenFileStrategy.cpp
-C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenAppend.h(8,26): error C2504: 'OpenFileStrategy': base class undefined
-C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenRead.h(8,26): error C2504: 'OpenFileStrategy': base class undefined
-C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenWrite.h(8,26): error C2504: 'OpenFileStrategy': base class undefined
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenAppend.h(5,26): error C2504: 'OpenFileStrategy': base class undefined
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenAppend.h(7,14): error C3668: 'OpenAppend::open': method with override specifier 'override' did not override any base class methods
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenRead.h(5,26): error C2504: 'OpenFileStrategy': base class undefined
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenRead.h(7,14): error C3668: 'OpenRead::open': method with override specifier 'override' did not override any base class methods
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenWrite.h(5,26): error C2504: 'OpenFileStrategy': base class undefined
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenWrite.h(7,14): error C3668: 'OpenWrite::open': method with override specifier 'override' did not override any base class methods
   OpenRead.cpp
-C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenAppend.h(8,26): error C2504: 'OpenFileStrategy': base class undefined
-C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenWrite.h(8,26): error C2504: 'OpenFileStrategy': base class undefined
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenAppend.h(5,26): error C2504: 'OpenFileStrategy': base class undefined
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenAppend.h(7,14): error C3668: 'OpenAppend::open': method with override specifier 'override' did not override any base class methods
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenWrite.h(5,26): error C2504: 'OpenFileStrategy': base class undefined
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenWrite.h(7,14): error C3668: 'OpenWrite::open': method with override specifier 'override' did not override any base class methods
   OpenWrite.cpp
-C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenAppend.h(8,26): error C2504: 'OpenFileStrategy': base class undefined
-C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenRead.h(8,26): error C2504: 'OpenFileStrategy': base class undefined
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenAppend.h(5,26): error C2504: 'OpenFileStrategy': base class undefined
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenAppend.h(7,14): error C3668: 'OpenAppend::open': method with override specifier 'override' did not override any base class methods
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenRead.h(5,26): error C2504: 'OpenFileStrategy': base class undefined
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\OpenRead.h(7,14): error C3668: 'OpenRead::open': method with override specifier 'override' did not override any base class methods
   Generating Code...
