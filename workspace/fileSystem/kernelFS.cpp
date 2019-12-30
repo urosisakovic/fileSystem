@@ -1,4 +1,8 @@
 #include "kernelFS.h"
+#include "OpenAppend.h"
+#include "OpenRead.h"
+#include "OpenWrite.h"
+
 // TODO: Check if any readCluster return -1
 // TODO: Use bool instead of char
 // TODO: Use inline functions
@@ -19,6 +23,8 @@ char* KernelFS::clusterBuffer = new char[CLUSTER_SIZE];
 
 Semaphore* KernelFS::mountSem = new Semaphore();
 Semaphore* KernelFS::allFilesClosed = new Semaphore();
+
+OpenFileStrategy* KernelFS::openFile = nullptr;
 
 // TODO: If other thread tries to mount that same partition, 
 //		 what should happen?
@@ -225,9 +231,9 @@ char KernelFS::doesExist(char* fname) {
 File* KernelFS::open(char* fname, char mode) {
 	if (mode == 'r')
 		openFile = new OpenRead(fname, rootDirLvl1Index);
-	if (mode == 'w')
+	else if (mode == 'w')
 		openFile = new OpenWrite(fname, rootDirLvl1Index);
-	if (mode == 'a')
+	else if (mode == 'a')
 		openFile = new OpenAppend(fname, rootDirLvl1Index);
 	else {
 		std::cout << "Invalid mode." << std::endl;

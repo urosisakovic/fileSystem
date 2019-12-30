@@ -9,9 +9,6 @@
 #include "file.h"
 #include "kernelFile.h"
 #include "clusterAllocation.h"
-#include "OpenAppend.h"
-#include "OpenRead.h"
-#include "OpenWrite.h"
 
 class File;
 class KernelFile;
