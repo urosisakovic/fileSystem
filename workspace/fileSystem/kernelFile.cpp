@@ -6,8 +6,6 @@ KernelFile::KernelFile(ClusterNo rootDirCluster, ClusterNo rootDirEntry, bool ca
 	this->clusterBuffer = new char[CLUSTER_SIZE];
 
 	this->canWrite = canWrite;
-
-	this->size = getFileSize();
 }
 
 KernelFile::~KernelFile() {
@@ -67,8 +65,6 @@ char KernelFile::write(BytesCnt bytesCnt, char* buffer) {
 		return 0;
 
 	filePtr->pos += bytesCnt - bufferPtr;
-
-	std::cout << filePos() << std::endl;
 
 	if (filePos() > getFileSize())
 		FileSystemUtils::setLength(filePtr->rootDirCluster, filePtr->rootDirEntry, filePos());

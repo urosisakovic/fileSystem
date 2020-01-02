@@ -66,7 +66,7 @@ ClusterNo ClusterAllocation::allocateCluster() {
 	for (ClusterNo i = 0; i < clusterCount; i++) {
 		if (!checkAllocated(i)) {
 			markAllocated(i);
-			std::cout << "Allocated cluster: " << i << std::endl;
+			// std::cout << "Allocated cluster: " << i << std::endl;
 			memset(clusterBuffer, 0, CLUSTER_SIZE);
 			writeCluster(i, clusterBuffer);
 

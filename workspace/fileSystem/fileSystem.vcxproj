@@ -170,6 +170,7 @@
     <ClCompile Include="OpenFileStrategy.cpp" />
     <ClCompile Include="OpenRead.cpp" />
     <ClCompile Include="OpenWrite.cpp" />
+    <ClCompile Include="single_threaded_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

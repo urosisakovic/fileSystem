@@ -40,17 +40,12 @@ DWORD WINAPI nit1run(){
 		wait(mutex);
 		cout<< threadName << ": Prepisan sadrzaj 'ulaz.dat' u '" << filepath << "'"<<endl;
 		signal(mutex);
-
+		
 		delete f;
 		wait(mutex);
 		cout<< threadName << ": zatvoren fajl '" << filepath << "'"<<endl;
 		signal(mutex);
-
-		f = FS::open(filepath, 'r');
-		cout << "Ponovo otvoren: " << f->getFileSize() << endl << endl << endl;
-		delete f;
 	}	
-
 	
 	{
 		File *src, *dst;

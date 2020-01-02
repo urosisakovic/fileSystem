@@ -4,8 +4,10 @@ KernelFile* OpenRead::open() {
 	if (!KernelFS::doesExist(fname))
 		return nullptr;
 	
-	KernelFile* kf = OpenFileStrategy::open();
-	kf->disableWriting();
+	ClusterNo lvl1IndexCluster, rootDirCluster, rootDirEntry;
+	FileSystemUtils::getFileInfo(fname, &lvl1IndexCluster, &rootDirCluster, &rootDirEntry);
+
+	KernelFile *kf = new KernelFile(rootDirCluster, rootDirEntry, false);
 
 	return kf;
 }

@@ -3,21 +3,21 @@
 char* FileSystemUtils::clusterBuffer = new char[CLUSTER_SIZE];
 
 char FileSystemUtils::setDataCluster(ClusterNo lvl2Index, ClusterNo lvl2IndexEntry, ClusterNo dataCluster) {
-	if (ClusterAllocation::readCluster(lvl2Index, clusterBuffer) == -1)
+	if (ClusterAllocation::readCluster(lvl2Index, clusterBuffer) == 0)
 		return 0;
 
 	ClusterNo* entry = (ClusterNo*)clusterBuffer + lvl2IndexEntry;
 
 	*entry = dataCluster;
 
-	if (ClusterAllocation::writeCluster(lvl2Index, clusterBuffer) == -1)
+	if (ClusterAllocation::writeCluster(lvl2Index, clusterBuffer) == 0)
 		return 0;
 
 	return 1;
 }
 
 BytesCnt FileSystemUtils::readLength(ClusterNo rootDirCluster, ClusterNo rootEntry) {
-	if (ClusterAllocation::readCluster(rootDirCluster, clusterBuffer) == -1)
+	if (ClusterAllocation::readCluster(rootDirCluster, clusterBuffer) == 0)
 		return 0;
 
 	rootDirEntry* entry = (rootDirEntry*)clusterBuffer + rootEntry;
@@ -28,14 +28,14 @@ BytesCnt FileSystemUtils::readLength(ClusterNo rootDirCluster, ClusterNo rootEnt
 }
 
 char FileSystemUtils::emptyRootDirEntry(ClusterNo rootDirCluster, ClusterNo rootEntry) {
-	if (ClusterAllocation::readCluster(rootDirCluster, clusterBuffer) == -1)
+	if (ClusterAllocation::readCluster(rootDirCluster, clusterBuffer) == 0)
 		return 0;
 
 	rootDirEntry* entry = (rootDirEntry*)clusterBuffer + rootEntry;
 
 	memset(entry, 0, ROOT_DIR_ENTRY_SIZE);
 
-	if (ClusterAllocation::writeCluster(rootDirCluster, clusterBuffer) == -1)
+	if (ClusterAllocation::writeCluster(rootDirCluster, clusterBuffer) == 0)
 		return 0;
 
 	return 1;
@@ -100,7 +100,7 @@ void FileSystemUtils::getFileInfo(char* fname, ClusterNo* lvl1IndexCluster, Clus
 	char* fileEntryFileName = new char[9];
 	char* fileEntryExtension = new char[4];
 
-	if (ClusterAllocation::readCluster(KernelFS::rootDirLvl1Index, lvl1Buffer) == -1)
+	if (ClusterAllocation::readCluster(KernelFS::rootDirLvl1Index, lvl1Buffer) == 0)
 		return;
 
 	for (int i = 0; i < ENTRIES_PER_INDEX; i++) {
@@ -109,7 +109,7 @@ void FileSystemUtils::getFileInfo(char* fname, ClusterNo* lvl1IndexCluster, Clus
 		if (*lvl1Ptr == 0)
 			continue;
 
-		if (ClusterAllocation::readCluster((*lvl1Ptr), lvl2Buffer) == -1)
+		if (ClusterAllocation::readCluster((*lvl1Ptr), lvl2Buffer) == 0)
 			return;
 
 		for (int j = 0; j < ENTRIES_PER_INDEX; j++) {
@@ -118,7 +118,7 @@ void FileSystemUtils::getFileInfo(char* fname, ClusterNo* lvl1IndexCluster, Clus
 			if (*lvl2Ptr == 0)
 				continue;
 
-			if (ClusterAllocation::readCluster((*lvl2Ptr), clusterBuffer) == -1)
+			if (ClusterAllocation::readCluster((*lvl2Ptr), clusterBuffer) == 0)
 				return;
 
 			for (int k = 0; k < ENTRIES_PER_ROOT_DIR; k++) {
@@ -158,7 +158,7 @@ void FileSystemUtils::getFileInfo(char* fname, ClusterNo* lvl1IndexCluster, Clus
 }
 
 char FileSystemUtils::setLength(ClusterNo rootDirCluster, ClusterNo rootEntry, unsigned size) {
-	if (ClusterAllocation::readCluster(rootDirCluster, clusterBuffer) == -1)
+	if (ClusterAllocation::readCluster(rootDirCluster, clusterBuffer) == 0)
 		return 0;
 
 	rootDirEntry* entry = (rootDirEntry*)clusterBuffer + rootEntry;
@@ -166,14 +166,14 @@ char FileSystemUtils::setLength(ClusterNo rootDirCluster, ClusterNo rootEntry, u
 	BytesCnt* length = (BytesCnt*)((char*)(*entry) + 16);
 	*length = size;
 
-	if (ClusterAllocation::writeCluster(rootDirCluster, clusterBuffer) == -1)
+	if (ClusterAllocation::writeCluster(rootDirCluster, clusterBuffer) == 0)
 		return 0;
 
 	return 1;
 }
 
 char FileSystemUtils::setLvl1Index(ClusterNo rootDirCluster, ClusterNo rootEntry, ClusterNo lvl1Index) {
-	if (ClusterAllocation::readCluster(rootDirCluster, clusterBuffer) == -1)
+	if (ClusterAllocation::readCluster(rootDirCluster, clusterBuffer) == 0)
 		return 0;
 
 	rootDirEntry* entry = (rootDirEntry*)clusterBuffer + rootEntry;
@@ -181,21 +181,50 @@ char FileSystemUtils::setLvl1Index(ClusterNo rootDirCluster, ClusterNo rootEntry
 	ClusterNo* lvl1 = (ClusterNo*)((char*)entry + 12);
 	*lvl1 = lvl1Index;
 
-	if (ClusterAllocation::writeCluster(rootDirCluster, clusterBuffer) == -1)
+	if (ClusterAllocation::writeCluster(rootDirCluster, clusterBuffer) == 0)
 		return 0;
 
 	return 1;
 }
 
+ClusterNo FileSystemUtils::getLvl1Index(ClusterNo rootDirCluster, ClusterNo rootEntry) {
+	if (ClusterAllocation::readCluster(rootDirCluster, clusterBuffer) == 0)
+		return 0;
+
+	rootDirEntry* entry = (rootDirEntry*)clusterBuffer + rootEntry;
+
+	ClusterNo* lvl1 = (ClusterNo*)((char*)entry + 12);
+
+	return *lvl1;
+}
+
+ClusterNo FileSystemUtils::getLvl2Index(ClusterNo lvl1IndexCluster, ClusterNo lvl1IndexEntry) {
+	if (ClusterAllocation::readCluster(lvl1IndexCluster, clusterBuffer) == 0)
+		return 0;
+
+	ClusterNo* lvl2Entry = (ClusterNo*)clusterBuffer + lvl1IndexEntry;
+
+	return *lvl2Entry;
+}
+
+ClusterNo FileSystemUtils::getDataCluster(ClusterNo lvl2IndexCluster, ClusterNo lvl2IndexEntry) {
+	if (ClusterAllocation::readCluster(lvl2IndexCluster, clusterBuffer) == 0)
+		return 0;
+
+	ClusterNo* dataEntry = (ClusterNo*)clusterBuffer + lvl2IndexEntry;
+
+	return *dataEntry;
+}
+
 char FileSystemUtils::setLvl2Index(ClusterNo lvl1Index, ClusterNo lvl1IndexEntry, ClusterNo lvl2Index) {
-	if (ClusterAllocation::readCluster(lvl1Index, clusterBuffer) == -1)
+	if (ClusterAllocation::readCluster(lvl1Index, clusterBuffer) == 0)
 		return 0;
 
 	ClusterNo* entry = (ClusterNo*)clusterBuffer + lvl1IndexEntry;
 
 	*entry = lvl2Index;
 
-	if (ClusterAllocation::writeCluster(lvl1Index, clusterBuffer) == -1)
+	if (ClusterAllocation::writeCluster(lvl1Index, clusterBuffer) == 0)
 		return 0;
 
 	return 1;

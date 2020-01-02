@@ -72,11 +72,8 @@ KernelFile* OpenFileStrategy::open() {
 				else {
 					ClusterNo dataClus = allocateAndSetDataCluster(fileName, extension);
 					// check for failure
-					if (dataClus == 0) {
-						std::cout << "here2" << std::endl;
-						exit(1);
+					if (dataClus == 0)
 						return nullptr;
-					}
 
 					*rootDirDataPtr = dataClus;
 					if (ClusterAllocation::writeCluster(*rootDirIndex2Ptr, rootDirIndex2) == 0) {

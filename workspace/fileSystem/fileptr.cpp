@@ -4,14 +4,21 @@ FilePointer::FilePointer(ClusterNo rootDirCluster, ClusterNo rootDirEntry) {
 	this->rootDirCluster = rootDirCluster;
 	this->rootDirEntry = rootDirEntry;
 
-	this->lvl1IndexCluster = 0;
+	this->lvl1IndexCluster = FileSystemUtils::getLvl1Index(rootDirCluster, rootDirEntry);
 	this->lvl1IndexEntry = 0;
 
-	this->lvl2IndexCluster = 0;
 	this->lvl2IndexEntry = 0;
-
-	this->dataCluster = 0;
 	this->pos = 0;
+
+	if (this->lvl1IndexCluster == 0) {
+		this->lvl2IndexCluster = 0;
+		this->dataCluster = 0;
+	}
+	else {
+		this->lvl2IndexCluster = FileSystemUtils::getLvl2Index(this->lvl1IndexCluster, this->lvl1IndexEntry);
+		this->dataCluster = FileSystemUtils::getDataCluster(this->lvl2IndexCluster, this->lvl2IndexEntry);
+	}
+	
 }
 
 char FilePointer::GoToNextCluster() {

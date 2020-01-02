@@ -13,6 +13,10 @@ public:
     static char emptyRootDirEntry(ClusterNo, ClusterNo);
     static void splitFileName(char*, char**, char**);
     static void getFileInfo(char*, ClusterNo*, ClusterNo*, ClusterNo*);
+
+    static ClusterNo getLvl1Index(ClusterNo, ClusterNo);
+    static ClusterNo getLvl2Index(ClusterNo, ClusterNo);
+    static ClusterNo getDataCluster(ClusterNo, ClusterNo);
 private:
     static char* clusterBuffer;
 };
