@@ -165,16 +165,12 @@ void testTruncation() {
 
 	std::cout << "Free clusters pre-write: " << ClusterAllocation::freeClustersCount() << std::endl;
 
-	const int LEN = 1 * int(1e6);
+	const int LEN = 500 * int(1e6);
 
 	char* wb = new char[LEN];
 	for (int i = 0; i < LEN; wb[i++] = i);
 
 	urosFile->write(LEN, wb);
-
-	urosFile->seek(1000);
-
-	urosFile->truncate();
 
 	std::cout << urosFile->getFileSize() << std::endl;
 }

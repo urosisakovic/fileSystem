@@ -29,8 +29,10 @@ char FilePointer::GoToNextCluster() {
 	if (lvl2IndexEntry < ENTRIES_PER_INDEX - 1) {
 		lvl2IndexEntry++;
 
-		if (ClusterAllocation::readCluster(lvl2IndexCluster, clusterBuffer) == -1)
-			return 0;
+		if (ClusterAllocation::readCluster(lvl2IndexCluster, clusterBuffer) == 0) {
+			std::cout << "error in FilePointer::GoToNextCluster 3" << std::endl;
+			exit(1);
+		}
 
 		ClusterNo* dataClustPtr = (ClusterNo*)clusterBuffer + lvl2IndexEntry;
 		dataCluster = *dataClustPtr;
@@ -48,8 +50,10 @@ char FilePointer::GoToNextCluster() {
 	// lvl2IndexEntry == ENTRIES_PER_INDEX - 1
 	lvl1IndexEntry++;
 
-	if (ClusterAllocation::readCluster(lvl1IndexCluster, clusterBuffer) == -1)
-		return 0;
+	if (ClusterAllocation::readCluster(lvl1IndexCluster, clusterBuffer) == 0) {
+		std::cout << "error in FilePointer::GoToNextCluster 4" << std::endl;
+		exit(1);
+	}
 
 	ClusterNo* lvl2IndexPtr = (ClusterNo*)clusterBuffer + lvl1IndexEntry;
 	lvl2IndexCluster = *lvl2IndexPtr;
@@ -68,8 +72,10 @@ char FilePointer::GoToNextCluster() {
 
 	lvl2IndexEntry = 0;
 
-	if (ClusterAllocation::readCluster(lvl2IndexCluster, clusterBuffer) == -1)
-		return 0;
+	if (ClusterAllocation::readCluster(lvl2IndexCluster, clusterBuffer) == 0) {
+		std::cout << "error in FilePointer::GoToNextCluster 4" << std::endl;
+		exit(1);
+	}
 
 	ClusterNo* dataClustPtr = (ClusterNo*)clusterBuffer;
 	dataCluster = *dataClustPtr;
@@ -103,7 +109,7 @@ void FilePointer::ensureDataCluster() {
 }
 
 BytesCnt FilePointer::byteOffset() {
-	return lvl1IndexEntry * (1 << 22) +
+	return lvl1IndexEntry * (1 << 20) +
 		lvl2IndexEntry * (1 << 11) +
 		pos;
 }
