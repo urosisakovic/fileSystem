@@ -11,6 +11,7 @@ KernelFile::KernelFile(ClusterNo rootDirCluster, ClusterNo rootDirEntry, bool ca
 }
 
 KernelFile::~KernelFile() {
+	KernelFS::close(fname);
 	delete filePtr;
 	delete[] clusterBuffer;
 }

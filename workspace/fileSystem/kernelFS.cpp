@@ -236,6 +236,12 @@ File* KernelFS::open(char* fname, char mode) {
 	File *f = new File();
 	f->myImpl = openFile->open();
 
+	if (f->myImpl == nullptr)
+		return nullptr;
+
+	f->myImpl->fname = new char[strlen(fname)];
+	memcpy(f->myImpl->fname, fname, strlen(fname) + 1);
+
 	(*openFiles)[fname] = f;
 
 	return f;

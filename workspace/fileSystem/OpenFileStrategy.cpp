@@ -28,8 +28,11 @@ ClusterNo OpenFileStrategy::allocateAndSetLvl2Cluster(ClusterNo dataCluster) {
 KernelFile* OpenFileStrategy::open() {
 	char* fileName = nullptr, * extension = nullptr;
 	FileSystemUtils::splitFileName(fname, &fileName, &extension);
-	if (fileName == nullptr)
+	if (fileName == nullptr) {
+		std::cout << "here1" << std::endl;
+		exit(1);
 		return nullptr;
+	}
 
 	// buffers for root directory level 1 index and
 	// root directory level 2 index
@@ -69,8 +72,11 @@ KernelFile* OpenFileStrategy::open() {
 				else {
 					ClusterNo dataClus = allocateAndSetDataCluster(fileName, extension);
 					// check for failure
-					if (dataClus == 0)
+					if (dataClus == 0) {
+						std::cout << "here2" << std::endl;
+						exit(1);
 						return nullptr;
+					}
 
 					*rootDirDataPtr = dataClus;
 					if (ClusterAllocation::writeCluster(*rootDirIndex2Ptr, rootDirIndex2) == 0) {
@@ -92,16 +98,22 @@ KernelFile* OpenFileStrategy::open() {
 		else {
 			ClusterNo dataClus = allocateAndSetDataCluster(fileName, extension);
 			// check for failure
-			if (dataClus == 0)
+			if (dataClus == 0) {
+				std::cout << "here3" << std::endl;
+				exit(1);
 				return nullptr;
+			}
 
 			rootDirClusterArg = dataClus;
 			rootDirEntryArg = 0;
 
 			ClusterNo lvl2Clus = allocateAndSetLvl2Cluster(dataClus);
 			// check for failure
-			if (lvl2Clus == 0)
+			if (lvl2Clus == 0) {
+				std::cout << "here4" << std::endl;
+				exit(1);
 				return nullptr;
+			}
 
 			*rootDirIndex2Ptr = lvl2Clus;
 			if (ClusterAllocation::writeCluster(rootDirLvl1Index, rootDirIndex1) == 0) {

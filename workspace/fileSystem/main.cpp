@@ -1,14 +1,14 @@
-#include"testprimer.h"
+#include "testprimer.h"
 
 using namespace std;
 
 HANDLE nit1,nit2;
 DWORD ThreadID;
 
-HANDLE semMain=CreateSemaphore(NULL,0,32,NULL);
-HANDLE sem12=CreateSemaphore(NULL,0,32,NULL);
-HANDLE sem21=CreateSemaphore(NULL,0,32,NULL);
-HANDLE mutex=CreateSemaphore(NULL,1,32,NULL);
+HANDLE semMain = CreateSemaphore(NULL, 0, 32, NULL);
+HANDLE sem12 = CreateSemaphore(NULL, 0, 32, NULL);
+HANDLE sem21 = CreateSemaphore(NULL, 0, 32, NULL);
+HANDLE mutex = CreateSemaphore(NULL, 1, 32, NULL);
 
 Partition *partition;
 
@@ -16,9 +16,9 @@ char *ulazBuffer;
 int ulazSize;
 
 int main(){
-	clock_t startTime,endTime;
-	cout<<"Pocetak testa!"<<endl;
-	startTime=clock();//pocni merenje vremena
+	clock_t startTime, endTime;
+	cout << "Pocetak testa!" << endl;
+	startTime = clock(); //pocni merenje vremena
 
 	{//ucitavamo ulazni fajl u bafer, da bi nit 1 i 2 mogle paralelno da citaju
 		FILE *f=fopen("ulaz.dat","rb");
@@ -32,8 +32,8 @@ int main(){
 		fclose(f);
 	}
 
-	nit1=CreateThread(NULL, 0,(LPTHREAD_START_ROUTINE) nit1run,NULL,0,&ThreadID); //kreira i startuje niti
-	nit2=CreateThread(NULL, 0,(LPTHREAD_START_ROUTINE) nit2run,NULL,0,&ThreadID);
+	nit1 = CreateThread(NULL, 0,(LPTHREAD_START_ROUTINE) nit1run,NULL,0,&ThreadID); //kreira i startuje niti
+	nit2 = CreateThread(NULL, 0,(LPTHREAD_START_ROUTINE) nit2run,NULL,0,&ThreadID);
 
 	for(int i=0; i<2; i++) wait(semMain);//cekamo da se niti zavrse
 	delete [] ulazBuffer;

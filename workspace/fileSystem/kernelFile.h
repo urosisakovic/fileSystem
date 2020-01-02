@@ -26,6 +26,7 @@ private:
 	char *clusterBuffer;
 	BytesCnt size;
 	bool canWrite;
+	char* fname;
 
 	friend class KernelFS;
 };
