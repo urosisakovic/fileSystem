@@ -21,6 +21,7 @@ public:
 	BytesCnt getFileSize();
 	char truncate();
 	void disableWriting() { canWrite = false; }
+	void enableWriting() { canWrite = true; }
 private:
 	FilePointer *filePtr;
 	char *clusterBuffer;

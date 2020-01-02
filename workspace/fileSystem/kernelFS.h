@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <string>
 #include <iostream>
+#include <vector>
 #include "part.h"
 #include "utils.h"
 #include "file.h"
@@ -12,55 +13,88 @@
 
 class File;
 class KernelFile;
-class OpenFileStrategy;
 
 class KernelFS {
 public:
-    // returns 1 for success and 0 for failure
-    static char mount(Partition* partition); 
-    // returns 1 for success and 0 for failure
-    static char unmount();  
-    // returns 1 for success and 0 for failure
-    static char format(); 
+    static char mount(Partition* partition);
+    static char unmount();
+    static char format();
 
-    // returns number of files for success and -1 for failure
     static FileCnt readRootDir();
-    // fname is aboslute filepath of a file
-    // returns 1 if such a file exists, 0 otherwise
     static char doesExist(char* fname); 
-    
+
+    static KernelFile* getFile(char* fname);
+    static KernelFile* createFile(char* fname);
+    static KernelFile* openRead(char* fname);
+    static KernelFile* openWrite(char* fname);
+    static KernelFile* openAppend(char* fname);
     static File* open(char* fname, char mode);
-
-    static char close(char* fname);
-
-    static char deleteFile(char* fname);
-
+    
+    static char close(char* fname);     
+    static char deleteFile(char* fname);    // not finished
 private:
-    // pointer to a Partition object which abstracts
-    // Windows 10 x64 API towards hard disk
+    class DataClusterNode {
+    public:
+        char* smallestKey;
+        ClusterNo clusterIdx;
+        ClusterNo lvl2IndexEntry;
+        unsigned freeEntryCnt;
+
+        DataClusterNode(ClusterNo clusterIdx, ClusterNo lvl1IndexEntry) {
+            this->clusterIdx = clusterIdx;
+            this->lvl2IndexEntry = lvl1IndexEntry;
+
+            this->smallestKey = nullptr;
+            this->freeEntryCnt = ENTRIES_PER_INDEX * ENTRIES_PER_ROOT_DIR;
+        }
+    };
+
+    class Lvl2IndexNode {
+    public:
+        char* smallestKey;
+        ClusterNo clusterIdx;
+        ClusterNo lvl1IndexEntry;
+        unsigned freeEntryCnt;
+        std::vector<DataClusterNode>* lvl1Nodes;
+
+        Lvl2IndexNode() : Lvl2IndexNode(0, 0) {}
+
+        Lvl2IndexNode(ClusterNo clusterIdx, ClusterNo lvl1IndexEntry) {
+            this->clusterIdx = clusterIdx;
+            this->lvl1IndexEntry = lvl1IndexEntry;
+
+            this->smallestKey = nullptr;
+            this->freeEntryCnt = ENTRIES_PER_INDEX * ENTRIES_PER_ROOT_DIR;
+            this->lvl1Nodes = new std::vector<DataClusterNode>();
+        }
+
+        ~Lvl2IndexNode() {
+            delete lvl1Nodes;
+        }
+
+        bool unpopulated() {
+            return clusterIdx == 0;
+        }
+
+        FileCnt countEntries() {
+            return lvl1Nodes->size();
+        }
+    };
+
     static Partition* partition;
 
-    // number of clusters in partition
-    // equal to partition.getNumOfClusters()
-    static ClusterNo clusterCount;
-
-    static char *bitVector;
-    // byte size of bit vector
-    static unsigned bitVectorByteSize;
-    // cluster size of bit vector
-    static ClusterNo bitVectorClusterSize;
-
-    // number of cluster containing level 1 index of root directory
-    // equal to bitVectorClusterCount
     static ClusterNo rootDirLvl1Index;
+    static char lvl1Index[CLUSTER_SIZE];
+    static Lvl2IndexNode lvl2IndexNodes[ENTRIES_PER_INDEX];
+
+    static ClusterNo clusterCount;
+    static char *bitVector;
+    static unsigned bitVectorByteSize;
+    static ClusterNo bitVectorClusterSize;
     
-    // buffer with the size equal to one cluster
-    // used to read a cluster into it or write a cluster from it
-    static char* clusterBuffer;
+    static char clusterBuffer[CLUSTER_SIZE];
 
     static std::unordered_map<std::string, File*> *openFiles;
-
-    static OpenFileStrategy* openFile;
 
 
     friend class FileSystemUtils;
