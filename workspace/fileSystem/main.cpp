@@ -1,6 +1,6 @@
 #include "testprimer.h"
-
-using namespace std;
+//
+//using namespace std;
 //
 //HANDLE nit1,nit2;
 //DWORD ThreadID;
