@@ -143,155 +143,155 @@ int main() {
 		signal(mutex);
 	}
 
-	//{ //12
-	//	File* src, * dst;
-	//	char filepath[] = "/fajl1.dat";
+	{ //12
+		File* src, * dst;
+		char filepath[] = "/fajl1.dat";
 
-	//	src = FS::open(filepath, 'r');
-	//	src->seek(src->getFileSize() / 2); //pozicionira se na pola fajla
-	//	wait(mutex);
-	//	cout << ": Otvoren fajl '" << filepath << "' i pozicionirani smo na polovini" << endl;
-	//	signal(mutex);
+		src = FS::open(filepath, 'r');
+		src->seek(src->getFileSize() / 2); //pozicionira se na pola fajla
+		wait(mutex);
+		cout << ": Otvoren fajl '" << filepath << "' i pozicionirani smo na polovini" << endl;
+		signal(mutex);
 
-	//	char filepath1[] = "/fajll5.dat";
+		char filepath1[] = "/fajll5.dat";
 
-	//	dst = FS::open(filepath1, 'w');
-	//	wait(mutex);
-	//	cout << ": Otvoren fajl '" << filepath1 << "'" << endl;
-	//	signal(mutex);
+		dst = FS::open(filepath1, 'w');
+		wait(mutex);
+		cout << ": Otvoren fajl '" << filepath1 << "'" << endl;
+		signal(mutex);
 
-	//	char c;
-	//	while (!src->eof()) {
-	//		src->read(1, &c);
-	//		dst->write(1, &c);
-	//	}
-	//	wait(mutex);
-	//	cout << ": Prepisana druga polovina '" << filepath << "' u '" << filepath1 << "'" << endl;
-	//	signal(mutex);
+		char c;
+		while (!src->eof()) {
+			src->read(1, &c);
+			dst->write(1, &c);
+		}
+		wait(mutex);
+		cout << ": Prepisana druga polovina '" << filepath << "' u '" << filepath1 << "'" << endl;
+		signal(mutex);
 
-	//	std::cout << dst->getFileSize() << std::endl;
+		std::cout << dst->getFileSize() << std::endl;
 
-	//	delete dst;
-	//	wait(mutex);
-	//	cout << ": Zatvoren fajl '" << filepath1 << "'" << endl;
-	//	signal(mutex);
+		delete dst;
+		wait(mutex);
+		cout << ": Zatvoren fajl '" << filepath1 << "'" << endl;
+		signal(mutex);
 
-	//	delete src;
-	//	wait(mutex);
-	//	cout << ": Zatvoren fajl '" << filepath << "'" << endl;
-	//	signal(mutex);
-	//}
+		delete src;
+		wait(mutex);
+		cout << ": Zatvoren fajl '" << filepath << "'" << endl;
+		signal(mutex);
+	}
 
-	//{	// 24
-	//	char copied_filepath[] = "/fajll5.dat";
-	//	File* copy = FS::open(copied_filepath, 'r');
+	{	// 24
+		char copied_filepath[] = "/fajll5.dat";
+		File* copy = FS::open(copied_filepath, 'r');
 
-	//	BytesCnt size = copy->getFileSize();
-	//	wait(mutex);
-	//	cout << ": Otvoren fajl '" << copied_filepath << "' i dohvacena velicina" << endl;
-	//	signal(mutex);
+		BytesCnt size = copy->getFileSize();
+		wait(mutex);
+		cout << ": Otvoren fajl '" << copied_filepath << "' i dohvacena velicina" << endl;
+		signal(mutex);
 
-	//	delete copy;
-	//	wait(mutex);
-	//	cout << ": Zatvoren fajl '" << copied_filepath << "'" << endl;
-	//	signal(mutex);
+		delete copy;
+		wait(mutex);
+		cout << ": Zatvoren fajl '" << copied_filepath << "'" << endl;
+		signal(mutex);
 
-	//	File* src, * dst;
-	//	char filepath[] = "/fajl1.dat";
-	//	src = FS::open(filepath, 'r');
-	//	src->seek(0);//pozicionira se na pola fajla
+		File* src, * dst;
+		char filepath[] = "/fajl1.dat";
+		src = FS::open(filepath, 'r');
+		src->seek(0);//pozicionira se na pola fajla
 
-	//	wait(mutex);
-	//	cout << ": Otvoren fajl '" << filepath << "' i pozicionirani smo na polovini" << endl;
-	//	signal(mutex);
+		wait(mutex);
+		cout << ": Otvoren fajl '" << filepath << "' i pozicionirani smo na polovini" << endl;
+		signal(mutex);
 
-	//	char filepath1[] = "/fajl25.dat";
+		char filepath1[] = "/fajl25.dat";
 
-	//	dst = FS::open(filepath1, 'w');
-	//	wait(mutex);
-	//	cout << ": Otvoren fajl '" << filepath1 << "'" << endl;
-	//	signal(mutex);
+		dst = FS::open(filepath1, 'w');
+		wait(mutex);
+		cout << ": Otvoren fajl '" << filepath1 << "'" << endl;
+		signal(mutex);
 
-	//	char c; BytesCnt cnt = src->getFileSize() - size;
-	//	while (!src->eof() && cnt-- > 0) {
-	//		src->read(1, &c);
-	//		dst->write(1, &c);
-	//	}
-	//	wait(mutex);
-	//	cout << ": Prepisana druga polovina '" << filepath << "' u '" << filepath1 << "'" << endl;
-	//	signal(mutex);
+		char c; BytesCnt cnt = src->getFileSize() - size;
+		while (!src->eof() && cnt-- > 0) {
+			src->read(1, &c);
+			dst->write(1, &c);
+		}
+		wait(mutex);
+		cout << ": Prepisana druga polovina '" << filepath << "' u '" << filepath1 << "'" << endl;
+		signal(mutex);
 
-	//	delete dst;
-	//	wait(mutex);
-	//	cout << ": Zatvoren fajl '" << filepath1 << "'" << endl;
-	//	signal(mutex);
+		delete dst;
+		wait(mutex);
+		cout << ": Zatvoren fajl '" << filepath1 << "'" << endl;
+		signal(mutex);
 
-	//	delete src;
-	//	wait(mutex);
-	//	cout << ": Zatvoren fajl '" << filepath << "'" << endl;
-	//	signal(mutex);
-	//}
+		delete src;
+		wait(mutex);
+		cout << ": Zatvoren fajl '" << filepath << "'" << endl;
+		signal(mutex);
+	}
 
-	//{ //13
-	//	File* src, * dst;
-	//	char filepath[] = "/fajl25.dat";
+	{ //13
+		File* src, * dst;
+		char filepath[] = "/fajl25.dat";
 
-	//	dst = FS::open(filepath, 'a');
+		dst = FS::open(filepath, 'a');
 
-	//	wait(mutex);
-	//	cout << ": Otvoren fajl '" << filepath << "'" << endl;
-	//	signal(mutex);
+		wait(mutex);
+		cout << ": Otvoren fajl '" << filepath << "'" << endl;
+		signal(mutex);
 
-	//	char filepath1[] = "/fajll5.dat";
-	//	src = FS::open(filepath1, 'r');
+		char filepath1[] = "/fajll5.dat";
+		src = FS::open(filepath1, 'r');
 
-	//	wait(mutex);
-	//	cout << ": Otvoren fajl '" << filepath1 << "'" << endl;
-	//	signal(mutex);
+		wait(mutex);
+		cout << ": Otvoren fajl '" << filepath1 << "'" << endl;
+		signal(mutex);
 
-	//	char c;
-	//	while (!src->eof()) {
-	//		src->read(1, &c);
-	//		dst->write(1, &c);
-	//	}
-	//	wait(mutex);
-	//	cout << ": Prepisana druga polovina '" << filepath << "' u '" << filepath1 << "'" << endl;
-	//	signal(mutex);
+		char c;
+		while (!src->eof()) {
+			src->read(1, &c);
+			dst->write(1, &c);
+		}
+		wait(mutex);
+		cout << ": Prepisana druga polovina '" << filepath << "' u '" << filepath1 << "'" << endl;
+		signal(mutex);
 
-	//	delete dst;
-	//	wait(mutex);
-	//	cout << ": Zatvoren fajl '" << filepath1 << "'" << endl;
-	//	signal(mutex);
+		delete dst;
+		wait(mutex);
+		cout << ": Zatvoren fajl '" << filepath1 << "'" << endl;
+		signal(mutex);
 
-	//	delete src;
-	//	wait(mutex);
-	//	cout << ": Zatvoren fajl '" << filepath << "'" << endl;
-	//	signal(mutex);
-	//}
+		delete src;
+		wait(mutex);
+		cout << ": Zatvoren fajl '" << filepath << "'" << endl;
+		signal(mutex);
+	}
 
-	//{	// 25
-	//	char filepath[] = "/fajl25.dat";
+	{	// 25
+		char filepath[] = "/fajl25.dat";
 
-	//	File* f = FS::open(filepath, 'r');
-	//	wait(mutex);
-	//	cout << ": Otvoren fajl " << filepath << "" << endl;
-	//	signal(mutex);
+		File* f = FS::open(filepath, 'r');
+		wait(mutex);
+		cout << ": Otvoren fajl " << filepath << "" << endl;
+		signal(mutex);
 
-	//	ofstream fout("izlaz2.dat", ios::out | ios::binary);
-	//	char* buff = new char[f->getFileSize()];
-	//	f->read(f->getFileSize(), buff);
-	//	fout.write(buff, f->getFileSize());
-	//	wait(mutex);
-	//	cout << ": Upisan '" << filepath << "' u fajl os domacina 'izlaz2.dat'" << endl;
-	//	signal(mutex);
+		ofstream fout("izlaz2.dat", ios::out | ios::binary);
+		char* buff = new char[f->getFileSize()];
+		f->read(f->getFileSize(), buff);
+		fout.write(buff, f->getFileSize());
+		wait(mutex);
+		cout << ": Upisan '" << filepath << "' u fajl os domacina 'izlaz2.dat'" << endl;
+		signal(mutex);
 
-	//	delete[] buff;
-	//	fout.close();
-	//	delete f;
-	//	wait(mutex);
-	//	cout << ": Zatvoren fajl " << filepath << "" << endl;
-	//	signal(mutex);
-	//}
+		delete[] buff;
+		fout.close();
+		delete f;
+		wait(mutex);
+		cout << ": Zatvoren fajl " << filepath << "" << endl;
+		signal(mutex);
+	}
 
 	{ // 26
 		FS::unmount();
