@@ -22,7 +22,7 @@ BytesCnt FileSystemUtils::readLength(ClusterNo rootDirCluster, ClusterNo rootEnt
 
 	rootDirEntry* entry = (rootDirEntry*)clusterBuffer + rootEntry;
 
-	BytesCnt* length = (BytesCnt*)entry + 16;
+	BytesCnt* length = (BytesCnt*)((char*)(*entry) + 16);
 
 	return *length;
 }
@@ -163,7 +163,7 @@ char FileSystemUtils::setLength(ClusterNo rootDirCluster, ClusterNo rootEntry, u
 
 	rootDirEntry* entry = (rootDirEntry*)clusterBuffer + rootEntry;
 
-	unsigned* length = (unsigned*)entry + 16;
+	BytesCnt* length = (BytesCnt*)((char*)(*entry) + 16);
 	*length = size;
 
 	if (ClusterAllocation::writeCluster(rootDirCluster, clusterBuffer) == -1)

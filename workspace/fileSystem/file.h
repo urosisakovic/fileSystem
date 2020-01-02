@@ -15,7 +15,7 @@ public:
 	BytesCnt filePos();   
 	char eof ();   
 	BytesCnt getFileSize ();   
-	char truncate (); 
+	char truncate(); 
 
 private: 
 	KernelFile* myImpl;
