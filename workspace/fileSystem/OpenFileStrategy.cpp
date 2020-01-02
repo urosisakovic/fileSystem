@@ -37,8 +37,10 @@ KernelFile* OpenFileStrategy::open() {
 	char* rootDirIndex2 = new char[CLUSTER_SIZE];
 
 	// read root directory level 1 index
-	if (ClusterAllocation::readCluster(rootDirLvl1Index, rootDirIndex1) == -1)
-		return nullptr;
+	if (ClusterAllocation::readCluster(rootDirLvl1Index, rootDirIndex1) == 0) {
+		std::cout << "error in open()" << std::endl;
+		exit(1);
+	}
 
 	ClusterNo* rootDirIndex2Ptr, * rootDirDataPtr;
 	bool finished = false;
@@ -51,8 +53,10 @@ KernelFile* OpenFileStrategy::open() {
 
 		// if it exists, try placing new file entry somewhere in it
 		if (*rootDirIndex2Ptr != 0) {
-			if (ClusterAllocation::readCluster(*rootDirIndex2Ptr, rootDirIndex2) == -1)
-				return nullptr;
+			if (ClusterAllocation::readCluster(*rootDirIndex2Ptr, rootDirIndex2) == 0) {
+				std::cout << "error in readCluster()" << std::endl;
+				exit(1);
+			}
 
 			for (int j = 0; j < ENTRIES_PER_INDEX; j++) {
 				rootDirDataPtr = (ClusterNo*)rootDirIndex2 + j;
@@ -69,8 +73,10 @@ KernelFile* OpenFileStrategy::open() {
 						return nullptr;
 
 					*rootDirDataPtr = dataClus;
-					if (ClusterAllocation::writeCluster(*rootDirIndex2Ptr, rootDirIndex2) == -1)
-						return nullptr;
+					if (ClusterAllocation::writeCluster(*rootDirIndex2Ptr, rootDirIndex2) == 0) {
+						std::cout << "error in readCluster()" << std::endl;
+						exit(1);
+					}
 
 					rootDirClusterArg = dataClus;
 					rootDirEntryArg = j;
@@ -98,8 +104,10 @@ KernelFile* OpenFileStrategy::open() {
 				return nullptr;
 
 			*rootDirIndex2Ptr = lvl2Clus;
-			if (ClusterAllocation::writeCluster(rootDirLvl1Index, rootDirIndex1) == -1)
-				return nullptr;
+			if (ClusterAllocation::writeCluster(rootDirLvl1Index, rootDirIndex1) == 0) {
+				std::cout << "error in readCluster()" << std::endl;
+				exit(1);
+			}
 			finished = true;
 		}
 
@@ -117,8 +125,10 @@ ClusterNo OpenFileStrategy::allocateAndSetDataCluster(char* fileName, char* exte
 	ClusterNo newRootDirDataCluster = ClusterAllocation::allocateCluster();
 	rootDirEntry* entry;
 
-	if (newRootDirDataCluster == 0)
-		return 0;
+	if (newRootDirDataCluster == 0) {
+		std::cout << "error in allocateAndSetDataCluster() 1" << std::endl;
+		exit(1);
+	}
 
 	char* rootDirData = new char[CLUSTER_SIZE];
 
@@ -133,7 +143,10 @@ ClusterNo OpenFileStrategy::allocateAndSetDataCluster(char* fileName, char* exte
 		(*entry)[i + 8] = extension[i];
 	}
 
-	ClusterAllocation::writeCluster(newRootDirDataCluster, rootDirData);
+	if (ClusterAllocation::writeCluster(newRootDirDataCluster, rootDirData) == 0) {
+		std::cout << "error in allocateAndSetDataCluster() 2" << std::endl;
+		exit(1);
+	}
 
 	delete[] rootDirData;
 	return newRootDirDataCluster;
@@ -144,8 +157,10 @@ char OpenFileStrategy::addEntryToDataDir(ClusterNo dataCluster, char* fileName, 
 	rootDirEntry* entry;
 	bool finished = false;
 
-	if (ClusterAllocation::readCluster(dataCluster, rootDirData) == -1)
-		return 0;
+	if (ClusterAllocation::readCluster(dataCluster, rootDirData) == 0) {
+		std::cout << "error in addEntryToDataDir() 1" << std::endl;
+		exit(1);
+	}
 
 	for (int k = 0; k < ENTRIES_PER_ROOT_DIR; k++) {
 		entry = (rootDirEntry*)rootDirData + k;
@@ -168,8 +183,10 @@ char OpenFileStrategy::addEntryToDataDir(ClusterNo dataCluster, char* fileName, 
 	}
 
 	if (finished)
-		if (ClusterAllocation::writeCluster(dataCluster, rootDirData) == -1)
-			return 0;
+		if (ClusterAllocation::writeCluster(dataCluster, rootDirData) == 0) {
+			std::cout << "error in addEntryToDataDir() 2" << std::endl;
+			exit(1);
+		}
 
 	delete[] rootDirData;
 
