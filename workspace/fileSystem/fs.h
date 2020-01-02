@@ -16,7 +16,7 @@ public:
     static char format(); //formatira particiju;               
                 // vraca 0 u slucaju neuspeha ili 1 u slucaju uspeha 
 
-    // static FileCnt readRootDir();
+    static FileCnt readRootDir();
                 // vraca -1 u slucaju neuspeha ili broj fajlova u slucaju uspeha  
 
     static char doesExist(char* fname); //argument je naziv fajla sa                                        

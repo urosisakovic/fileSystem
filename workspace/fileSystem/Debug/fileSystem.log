@@ -1,4 +1,15 @@
-﻿  kernelFile.cpp
-  main.cpp
-  Generating Code...
-  fileSystem.vcxproj -> C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\Debug\fileSystem.exe
+﻿nit1.obj : error LNK2001: unresolved external symbol "void * mutex" (?mutex@@3PAXA)
+nit2.obj : error LNK2001: unresolved external symbol "void * mutex" (?mutex@@3PAXA)
+nit1.obj : error LNK2001: unresolved external symbol "void * semMain" (?semMain@@3PAXA)
+nit2.obj : error LNK2001: unresolved external symbol "void * semMain" (?semMain@@3PAXA)
+nit1.obj : error LNK2001: unresolved external symbol "void * sem12" (?sem12@@3PAXA)
+nit2.obj : error LNK2001: unresolved external symbol "void * sem12" (?sem12@@3PAXA)
+nit1.obj : error LNK2001: unresolved external symbol "void * sem21" (?sem21@@3PAXA)
+nit2.obj : error LNK2001: unresolved external symbol "void * sem21" (?sem21@@3PAXA)
+nit1.obj : error LNK2001: unresolved external symbol "class Partition * partition" (?partition@@3PAVPartition@@A)
+    Hint on symbols that are defined and could potentially match:
+      "private: static class Partition * ClusterAllocation::partition" (?partition@ClusterAllocation@@0PAVPartition@@A)
+      "private: static class Partition * KernelFS::partition" (?partition@KernelFS@@0PAVPartition@@A)
+nit1.obj : error LNK2001: unresolved external symbol "char * ulazBuffer" (?ulazBuffer@@3PADA)
+nit1.obj : error LNK2001: unresolved external symbol "int ulazSize" (?ulazSize@@3HA)
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\Debug\fileSystem.exe : fatal error LNK1120: 7 unresolved externals

@@ -18,9 +18,9 @@ char FS::format() {
 	return KernelFS::format();
 }
 
-//FileCnt FS::readRootDir() {
-//	return KernelFS::readRootDir();
-//}
+FileCnt FS::readRootDir() {
+	return KernelFS::readRootDir();
+}
 
 char FS::doesExist(char* fname) {
 	return KernelFS::doesExist(fname);

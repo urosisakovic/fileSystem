@@ -54,6 +54,9 @@
     <ClInclude Include="FileSystemUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="testprimer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="file.cpp">
@@ -90,6 +93,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FileSystemUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="nit1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="nit2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

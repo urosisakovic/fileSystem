@@ -152,6 +152,7 @@
     <ClInclude Include="OpenRead.h" />
     <ClInclude Include="OpenWrite.h" />
     <ClInclude Include="part.h" />
+    <ClInclude Include="testprimer.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
@@ -163,6 +164,8 @@
     <ClCompile Include="kernelFile.cpp" />
     <ClCompile Include="kernelFS.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="nit1.cpp" />
+    <ClCompile Include="nit2.cpp" />
     <ClCompile Include="OpenAppend.cpp" />
     <ClCompile Include="OpenFileStrategy.cpp" />
     <ClCompile Include="OpenRead.cpp" />
