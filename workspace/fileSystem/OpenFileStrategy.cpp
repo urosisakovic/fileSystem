@@ -27,7 +27,7 @@ ClusterNo OpenFileStrategy::allocateAndSetLvl2Cluster(ClusterNo dataCluster) {
 
 KernelFile* OpenFileStrategy::open() {
 	char* fileName = nullptr, * extension = nullptr;
-	splitFileName(fname, &fileName, &extension);
+	FileSystemUtils::splitFileName(fname, &fileName, &extension);
 	if (fileName == nullptr)
 		return nullptr;
 
@@ -152,12 +152,16 @@ char OpenFileStrategy::addEntryToDataDir(ClusterNo dataCluster, char* fileName, 
 		rootDirEntryArg = k;
 
 		if ((*entry)[0] == 0) {
+			for (unsigned i = 0; i < 32; i++)
+				(*entry)[i] = 0;
+
 			for (unsigned i = 0; i < strlen(fileName); i++)
 				(*entry)[i] = fileName[i];
 
 			for (unsigned i = 0; i < strlen(extension); i++) {
 				(*entry)[i + 8] = extension[i];
 			}
+
 			finished = true;
 			break;
 		}
@@ -173,46 +177,4 @@ char OpenFileStrategy::addEntryToDataDir(ClusterNo dataCluster, char* fileName, 
 		return 1;
 	else
 		return 0;
-}
-
-void OpenFileStrategy::splitFileName(char* fname, char** fileName, char** extension) {
-	int fnameLen = strlen(fname);
-	int dotPos = -1;
-	for (int i = fnameLen - 1; i >= 0; i--) {
-		if (fname[i] == '.') {
-			dotPos = i;
-			break;
-		}
-	}
-
-	if (dotPos == -1) {
-		*fileName = nullptr;
-		return;
-	}
-	if (dotPos == fnameLen - 1) {
-		*fileName = nullptr;
-		return;
-	}
-	if (dotPos == 0) {
-		*fileName = nullptr;
-		return;
-	}
-	if (dotPos > 8) {
-		*fileName = nullptr;
-		return;
-	}
-	if (fnameLen - dotPos - 1 > 3) {
-		*fileName = nullptr;
-		return;
-	}
-
-	*fileName = new char[dotPos + 1];
-	*extension = new char[(fnameLen - dotPos - 1) + 1];
-
-	for (int i = 0; i < dotPos; i++)
-		(*fileName)[i] = fname[i];
-	(*fileName)[dotPos] = '\0';
-	for (int i = dotPos + 1; i < fnameLen; i++)
-		(*extension)[i - dotPos - 1] = fname[i];
-	(*extension)[fnameLen - dotPos - 1] = '\0';
 }

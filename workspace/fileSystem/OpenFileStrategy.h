@@ -12,7 +12,6 @@ public:
 	static ClusterNo allocateAndSetDataCluster(char*, char*);
 	static ClusterNo allocateAndSetLvl2Cluster(ClusterNo);
 	static char addEntryToDataDir(ClusterNo, char*, char*, ClusterNo&);
-	static void splitFileName(char*, char**, char**);
 
 	OpenFileStrategy(char*, ClusterNo);
 protected:

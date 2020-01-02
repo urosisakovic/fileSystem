@@ -1,7 +1,7 @@
 #include "OpenRead.h"
 
 KernelFile* OpenRead::open() {
-	if (KernelFS::doesExist(fname))
+	if (!KernelFS::doesExist(fname))
 		return nullptr;
 	
 	KernelFile* kf = OpenFileStrategy::open();

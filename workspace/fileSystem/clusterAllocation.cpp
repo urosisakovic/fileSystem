@@ -50,10 +50,20 @@ void ClusterAllocation::setBitVector(unsigned bVSize, char* bV) {
 	memcpy(bitVector, bV, bVSize);
 }
 
+long ClusterAllocation::freeClustersCount() {
+	long cnt = 0;
+
+	for (int i = 0; i < clusterCount; i++)
+		if (!checkAllocated(i))
+			cnt++;
+
+	return cnt;
+}
+
 ClusterNo ClusterAllocation::allocateCluster() {
 	char clusterBuffer[CLUSTER_SIZE];
 
-	for (ClusterNo i = 1; i < clusterCount; i++) {
+	for (ClusterNo i = 0; i < clusterCount; i++) {
 		if (!checkAllocated(i)) {
 			markAllocated(i);
 			std::cout << "Allocated cluster: " << i << std::endl;
@@ -64,11 +74,12 @@ ClusterNo ClusterAllocation::allocateCluster() {
 		}
 	}
 
+	std::cout << "CANNOT ALLOCATE CLUSTER." << std::endl;
 	return 0;
 }
 
 char ClusterAllocation::deallocateCluster(ClusterNo freeClusterIdx) {
-	if (checkAllocated(freeClusterIdx))
+	if (!checkAllocated(freeClusterIdx))
 		return 0;
 
 	markDeallocated(freeClusterIdx);

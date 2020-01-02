@@ -3,7 +3,6 @@
 #include <unordered_map>
 #include <string>
 #include <iostream>
-#include "sem.h"
 #include "part.h"
 #include "utils.h"
 #include "file.h"
@@ -30,9 +29,10 @@ public:
     // returns 1 if such a file exists, 0 otherwise
     static char doesExist(char* fname); 
     
-    // description
     static File* open(char* fname, char mode);
-    // description
+
+    static char close(char* fname);
+
     static char deleteFile(char* fname);
 
 private:
@@ -57,15 +57,12 @@ private:
     // buffer with the size equal to one cluster
     // used to read a cluster into it or write a cluster from it
     static char* clusterBuffer;
-    
-    // blocks all thread which try to mount a partition while there is
-    // already one mounted
-    static Semaphore* mountSem;
-    // blocks unmounting and formatting if there are open files
-    static Semaphore* allFilesClosed;
 
     static std::unordered_map<std::string, File*> *openFiles;
 
     static OpenFileStrategy* openFile;
+
+
+    friend class FileSystemUtils;
 };
 

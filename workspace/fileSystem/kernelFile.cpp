@@ -53,8 +53,6 @@ char KernelFile::write(BytesCnt bytesCnt, char* buffer) {
 	while (bytesCnt - bufferPtr >= CLUSTER_SIZE) {
 		filePtr->GoToNextCluster();
 
-		if (ClusterAllocation::readCluster(filePtr->dataCluster, clusterBuffer) == -1)
-			return 0;
 		memcpy(clusterBuffer, buffer + bufferPtr, CLUSTER_SIZE);
 		if (ClusterAllocation::writeCluster(filePtr->dataCluster, clusterBuffer) == -1)
 			return 0;
@@ -157,7 +155,11 @@ BytesCnt KernelFile::getFileSize() {
 }
 
 char KernelFile::truncate() {
-	ClusterAllocation::readCluster(filePtr->lvl1IndexCluster, clusterBuffer);
+	if (filePtr->lvl1IndexCluster == 0)
+		return 1;
+
+	if (ClusterAllocation::readCluster(filePtr->lvl1IndexCluster, clusterBuffer) == 0)
+		return 0;
 
 	char additionalBuffer[CLUSTER_SIZE], lvl2IndexBuffer[CLUSTER_SIZE];
 
@@ -197,6 +199,4 @@ char KernelFile::truncate() {
 	FileSystemUtils::setLength(filePtr->rootDirCluster, filePtr->rootDirEntry, 0);
 
 	return 1;
-	
-	return 0;
 }

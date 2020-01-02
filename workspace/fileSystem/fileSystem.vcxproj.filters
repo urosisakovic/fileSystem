@@ -27,9 +27,6 @@
     <ClInclude Include="kernelFS.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="kernelFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -68,16 +65,10 @@
     <ClCompile Include="kernelFS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="semaphore.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="kernelFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="fileptr.cpp">

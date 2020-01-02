@@ -1,80 +1,22 @@
 #include <iostream>
 #include "kernelFS.h"
 #include "part.h"
-
-void test1() {
-	std::cout << "Test1 started executing!" << std::endl;
-
-	Partition* p = new Partition((char*)"p1.ini");
-	std::cout << "Created Partition" << std::endl;
-
-	KernelFS* k = new KernelFS();
-	std::cout << "Created KernelFS" << std::endl;
-
-	k->mount(p);
-	std::cout << "Mounted partition" << std::endl;
-
-	k->format();
-	std::cout << "Formatted partition" << std::endl;
-
-	int fileCnt = k->readRootDir();
-	std::cout << "Counted files: " << fileCnt << std::endl;
-
-	if (k->doesExist((char*)"uros.txt"))
-		std::cout << "uros.txt does exist." << std::endl;
-	else
-		std::cout << "uros.txt does not exist" << std::endl;
-
-	k->open((char*)"uros.txt", 'w');
-	k->open((char*)"viki.txt", 'w');
-	k->open((char*)"mama.txt", 'w');
-	k->open((char*)"tata.txt", 'w');
-	std::cout << "Counted files: " << k->readRootDir() << std::endl;
-
-	if (k->doesExist((char*)"uros.txt"))
-		std::cout << "uros.txt does exist." << std::endl;
-	else
-		std::cout << "uros.txt does not exist" << std::endl;
-
-	if (k->doesExist((char*)"viki.txt"))
-		std::cout << "viki.txt does exist." << std::endl;
-	else
-		std::cout << "viki.txt does not exist" << std::endl;
-
-	if (k->doesExist((char*)"mama.txt"))
-		std::cout << "mama.txt does exist." << std::endl;
-	else
-		std::cout << "mama.txt does not exist" << std::endl;
-
-	if (k->doesExist((char*)"tata.txt"))
-		std::cout << "tata.txt does exist." << std::endl;
-	else
-		std::cout << "tata.txt does not exist" << std::endl;
-
-	std::cout << "Program finished executing!" << std::endl;
-
-	if (k->doesExist((char*)"lala.txt"))
-		std::cout << "lala.txt does exist." << std::endl;
-	else
-		std::cout << "lala.txt does not exist" << std::endl;
-
-	std::cout << "Program finished executing!" << std::endl;
-}
+#include "clusterAllocation.h"
 
 void check(char *a, char *b, int len) {
 	for (int i = 0; i < len; i++)
 		if (a[i] != b[i]) {
-			std::cout << "NE RADI: " << i << std::endl;
+			std::cout << "NE RADI: " << i << "  " << int(a[i]) << "   " << int(b[i]) << std::endl;
 			return;
 		}
 
 	std::cout << "RADI" << std::endl;
 }
 
-void test2() {
-	std::cout << "Test1 started executing!" << std::endl;
+void testWriteRead() {
+	std::cout << "testWriteRead started executing!" << std::endl;
 
-	Partition* p = new Partition((char*)"p1.ini");
+	Partition* p = new Partition((char*)"p2.ini");
 	std::cout << "Created Partition" << std::endl;
 
 	KernelFS* k = new KernelFS();
@@ -88,7 +30,7 @@ void test2() {
 
 	File *urosFile = k->open((char*)"uros.txt", 'w');
 
-	const int LEN = 100000;
+	const int LEN = 5 * int(1e6);
 
 	char* wb = new char[LEN];
 	for (int i = 0; i < LEN; wb[i++] = i);
@@ -104,9 +46,108 @@ void test2() {
 
 	for (int i = 0; i < 20; i++)
 		std::cout << int(rb[i]) << " ";
-
 }
 
+void testFileCreationAndDeletion() {
+	std::cout << "testFileCreationAndDeletion started executing!" << std::endl;
+
+	Partition* p = new Partition((char*)"p2.ini");
+	std::cout << "Created Partition" << std::endl;
+
+	KernelFS* k = new KernelFS();
+	std::cout << "Created KernelFS" << std::endl;
+
+	k->mount(p);
+	std::cout << "Mounted partition" << std::endl;
+
+	k->format();
+	std::cout << "Formatted partition" << std::endl;
+
+	const int LEN = 1000;
+
+	char filepath[12] = { 'u', 'r', 'o', 's', '0', '0', '0', '.', 't', 'x', 't', '\0' };
+	for (int i = 0; i < LEN; i++) {
+		int s = i / 100;
+		int d = (i - s * 100) / 10;
+		int j = i % 10;
+
+		char ss = '0' + s;
+		char dd = '0' + d;
+		char jj = '0' + j;
+
+		filepath[4] = ss;
+		filepath[5] = dd;
+		filepath[6] = jj;
+
+		if (KernelFS::open(filepath, 'w') == 0) {
+			std::cout << "error creating file." << std::endl;
+			exit(1);
+		}
+
+		std::cout << KernelFS::readRootDir() << std::endl;
+	}
+
+	for (int i = 0; i < LEN; i++) {
+		int s = i / 100;
+		int d = (i - s * 100) / 10;
+		int j = i % 10;
+
+		char ss = '0' + s;
+		char dd = '0' + d;
+		char jj = '0' + j;
+
+		filepath[4] = ss;
+		filepath[5] = dd;
+		filepath[6] = jj;
+
+		KernelFS::close(filepath);
+
+		if (KernelFS::deleteFile(filepath) == 0)
+			std::cout << "error deleting file. " << i << std::endl;
+
+		std::cout << KernelFS::readRootDir() << std::endl;
+	}
+}
+
+void testDeletion() {
+	std::cout << "testDeletion started executing!" << std::endl;
+
+	Partition* p = new Partition((char*)"p2.ini");
+	std::cout << "Created Partition" << std::endl;
+
+	KernelFS* k = new KernelFS();
+	std::cout << "Created KernelFS" << std::endl;
+
+	k->mount(p);
+	std::cout << "Mounted partition" << std::endl;
+
+	k->format();
+	std::cout << "Formatted partition" << std::endl;
+
+	File* urosFile = k->open((char*)"uros.txt", 'w');
+
+	std::cout << "Free clusters pre-write: " << ClusterAllocation::freeClustersCount() << std::endl;
+
+	const int LEN = 5 * int(1e6);
+
+	char* wb = new char[LEN];
+	for (int i = 0; i < LEN; wb[i++] = i);
+
+	urosFile->write(LEN, wb);
+
+	std::cout << "Free clusters post-write pre-deletion: " << ClusterAllocation::freeClustersCount() << std::endl;
+
+	KernelFS::close((char*)"uros.txt");
+
+	if (KernelFS::deleteFile((char*)"uros.txt") == 0)
+		std::cout << "error while deleting" << std::endl;
+
+	std::cout << "Free clusters post-write post-deletion: " << ClusterAllocation::freeClustersCount() << std::endl;
+}
+
+
 int main() {
-	test2();
+	// testWriteRead();
+	// testFileCreationAndDeletion();
+	testDeletion();
 }

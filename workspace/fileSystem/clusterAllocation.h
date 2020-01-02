@@ -22,6 +22,8 @@ public:
 
     static void setPartition(Partition*);
     static void setBitVector(unsigned, char*);
+
+    static long freeClustersCount();
 private:
     static Partition* partition;
     static char* bitVector;

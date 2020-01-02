@@ -1,7 +1,7 @@
 #include "OpenAppend.h"
 
 KernelFile* OpenAppend::open() {
-	if (KernelFS::doesExist(fname))
+	if (!KernelFS::doesExist(fname))
 		return nullptr;
 
 	KernelFile *kf = OpenFileStrategy::open();

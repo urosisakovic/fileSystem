@@ -1,6 +1,7 @@
 #pragma once
 #include "utils.h"
 #include "clusterAllocation.h"
+#include "kernelFS.h"
 
 class FileSystemUtils {
 public:
@@ -10,6 +11,8 @@ public:
     static char setDataCluster(ClusterNo, ClusterNo, ClusterNo);
     static BytesCnt readLength(ClusterNo, ClusterNo);
     static char emptyRootDirEntry(ClusterNo, ClusterNo);
+    static void splitFileName(char*, char**, char**);
+    static void getFileInfo(char*, ClusterNo*, ClusterNo*, ClusterNo*);
 private:
     static char* clusterBuffer;
 };

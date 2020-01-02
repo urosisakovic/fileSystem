@@ -17,18 +17,12 @@ unsigned KernelFS::bitVectorByteSize = 0;
 ClusterNo KernelFS::bitVectorClusterSize = 0;
 ClusterNo KernelFS::rootDirLvl1Index = 0;
 char* KernelFS::clusterBuffer = new char[CLUSTER_SIZE];
-Semaphore* KernelFS::mountSem = new Semaphore();
-Semaphore* KernelFS::allFilesClosed = new Semaphore();
 OpenFileStrategy* KernelFS::openFile = nullptr;
 std::unordered_map<std::string, File*>* KernelFS::openFiles = new std::unordered_map<std::string, File*>();
 
 // TODO: If other thread tries to mount that same partition, 
 //		 what should happen?
 char KernelFS::mount(Partition* partition) {
-	// other threads get blocked if they attempt
-	// to mount some other partition
-	mountSem->wait();
-
 	KernelFS::partition = partition;
 
 	ClusterAllocation::setPartition(partition);
@@ -45,8 +39,10 @@ char KernelFS::mount(Partition* partition) {
 	
 	// read bit vector
 	for (ClusterNo i = 0; i < bitVectorClusterSize; i++) {
-		if (ClusterAllocation::readCluster(i, clusterBuffer) == -1)
-			return 0;
+		if (ClusterAllocation::readCluster(i, clusterBuffer) == 0) {
+			std::cout << "error in mount()" << std::endl;
+			exit(1);
+		}
 		memcpy(bitVector + i * CLUSTER_SIZE, clusterBuffer, CLUSTER_SIZE);
 	}
 
@@ -59,15 +55,11 @@ char KernelFS::mount(Partition* partition) {
 }
 
 char KernelFS::unmount() {
-	// wait until all files are closed
-	allFilesClosed->wait();
+	if (partition == nullptr)
+		return 0;
 
 	partition = nullptr;
 	delete[] bitVector;
-
-	// other partition can now be mounted
-	mountSem->signal();	
-	allFilesClosed->signal();
 
 	return 1;
 }
@@ -76,15 +68,13 @@ char KernelFS::format() {
 	if (!partition)
 		return 0;
 
-	// wait until all files are closed
-	allFilesClosed->wait();
-
 	// update bit vector in KernelFS object
 	unsigned char allSet = 0;
 	for (int i = 0; i < 8; i++)
 		allSet += 1 << i;
 
-	for (unsigned i = 0; i < bitVectorByteSize; bitVector[i++] = allSet);
+	memset(bitVector, allSet, bitVectorByteSize);
+	ClusterAllocation::setBitVector(bitVectorByteSize, bitVector);
 	for (unsigned i = 0; i < bitVectorClusterSize; i++)
 		ClusterAllocation::markAllocated(i);
 	ClusterAllocation::markAllocated(rootDirLvl1Index);
@@ -92,16 +82,18 @@ char KernelFS::format() {
 	// update bit vector on disk
 	for (unsigned i = 0; i < bitVectorClusterSize; i++) {
 		memcpy(clusterBuffer, bitVector + i * CLUSTER_SIZE, CLUSTER_SIZE);
-		if (ClusterAllocation::writeCluster(i, clusterBuffer) == -1)
-			return 0;
+		if (ClusterAllocation::writeCluster(i, clusterBuffer) == 0) {
+			std::cout << "error in format() 1" << std::endl;
+			exit(1);
+		}
 	}
 
 	// update root directory level 1 index
 	memset(clusterBuffer, 0, CLUSTER_SIZE);
-	if (ClusterAllocation::writeCluster(rootDirLvl1Index, clusterBuffer) == -1)
-		return 0;
-
-	allFilesClosed->signal();
+	if (ClusterAllocation::writeCluster(rootDirLvl1Index, clusterBuffer) == 0) {
+		std::cout << "error in format() 2" << std::endl;
+		exit(1);
+	}
 
 	return 1;
 }
@@ -115,8 +107,10 @@ FileCnt KernelFS::readRootDir() {
 	char* lvl1Buffer = new char[CLUSTER_SIZE];
 	char* lvl2Buffer = new char[CLUSTER_SIZE];
 
-	if (ClusterAllocation::readCluster(rootDirLvl1Index, lvl1Buffer) == -1)
-		return -1;
+	if (ClusterAllocation::readCluster(rootDirLvl1Index, lvl1Buffer) == 0) {
+		std::cout << "error in readRootDir() 1" << std::endl;
+		exit(1);
+	}
 
 	for (int i = 0; i < ENTRIES_PER_INDEX; i++) {
 		lvl1Ptr = (ClusterNo*)lvl1Buffer + i;
@@ -124,8 +118,10 @@ FileCnt KernelFS::readRootDir() {
 		if (*lvl1Ptr == 0)
 			continue;
 
-		if (ClusterAllocation::readCluster((*lvl1Ptr), lvl2Buffer) == -1)
-			return -1;
+		if (ClusterAllocation::readCluster((*lvl1Ptr), lvl2Buffer) == 0) {
+			std::cout << "error in readRootDir() 2" << std::endl;
+			exit(1);
+		}
 
 		for (int j = 0; j < ENTRIES_PER_INDEX; j++) {
 			lvl2Ptr = (ClusterNo*)lvl2Buffer + j;
@@ -133,8 +129,10 @@ FileCnt KernelFS::readRootDir() {
 			if (*lvl2Ptr == 0)
 				continue;
 
-			if (ClusterAllocation::readCluster((*lvl2Ptr), clusterBuffer) == -1)
-				return -1;
+			if (ClusterAllocation::readCluster((*lvl2Ptr), clusterBuffer) == 0) {
+				std::cout << "error in readRootDir() 3" << std::endl;
+				exit(1);
+			}
 
 			for (int k = 0; k < ENTRIES_PER_ROOT_DIR; k++) {
 				fileEntry = (rootDirEntry*)clusterBuffer + k;
@@ -149,20 +147,14 @@ FileCnt KernelFS::readRootDir() {
 
 	delete[] lvl1Buffer;
 	delete[] lvl2Buffer;
-
 	return fileCnt;
 }
 
 char KernelFS::doesExist(char* fname) {
-	int fnameLen = strlen(fname);
-	if (fnameLen > 8 || fnameLen == 0)
-		return -1;
-
 	char* fileName = nullptr, *extension = nullptr;
-	//TODO: Fix this design
-	(new OpenAppend(fname, 0))->splitFileName(fname, &fileName, &extension);
+	FileSystemUtils::splitFileName(fname, &fileName, &extension);
 	if (fileName == nullptr)
-		return -1;
+		return 0;
 	
 	ClusterNo* lvl1Ptr, * lvl2Ptr;
 	rootDirEntry* fileEntry;
@@ -172,8 +164,10 @@ char KernelFS::doesExist(char* fname) {
 	char* fileEntryFileName = new char[9];
 	char* fileEntryExtension = new char[4];
 
-	if (ClusterAllocation::readCluster(rootDirLvl1Index, lvl1Buffer) == -1)
-		return -1;
+	if (ClusterAllocation::readCluster(rootDirLvl1Index, lvl1Buffer) == 0) {
+		std::cout << "error in doesExist() 1" << std::endl;
+		exit(1);
+	}
 
 	for (int i = 0; i < ENTRIES_PER_INDEX; i++) {
 		lvl1Ptr = (ClusterNo*)lvl1Buffer + i;
@@ -181,8 +175,10 @@ char KernelFS::doesExist(char* fname) {
 		if (*lvl1Ptr == 0)
 			continue;
 
-		if (ClusterAllocation::readCluster((*lvl1Ptr), lvl2Buffer) == -1)
-			return -1;
+		if (ClusterAllocation::readCluster((*lvl1Ptr), lvl2Buffer) == 0) {
+			std::cout << "error in doesExist() 2" << std::endl;
+			exit(1);
+		}
 
 		for (int j = 0; j < ENTRIES_PER_INDEX; j++) {
 			lvl2Ptr = (ClusterNo*)lvl2Buffer + j;
@@ -190,8 +186,10 @@ char KernelFS::doesExist(char* fname) {
 			if (*lvl2Ptr == 0)
 				continue;
 
-			if (ClusterAllocation::readCluster((*lvl2Ptr), clusterBuffer) == -1)
-				return -1;
+			if (ClusterAllocation::readCluster((*lvl2Ptr), clusterBuffer) == 0) {
+				std::cout << "error in doesExist() 3" << std::endl;
+				exit(1);
+			}
 
 			for (int k = 0; k < ENTRIES_PER_ROOT_DIR; k++) {
 				fileEntry = (rootDirEntry*)clusterBuffer + k;
@@ -220,7 +218,6 @@ char KernelFS::doesExist(char* fname) {
 	delete[] lvl2Buffer;
 	delete[] fileEntryFileName;
 	delete[] fileEntryExtension;
-
 	return 0;
 }
 
@@ -239,20 +236,90 @@ File* KernelFS::open(char* fname, char mode) {
 	File *f = new File();
 	f->myImpl = openFile->open();
 
+	(*openFiles)[fname] = f;
+
 	return f;
 }
 
-char KernelFS::deleteFile(char* fname) {
+char KernelFS::close(char* fname) {
 	if (openFiles->find(fname) == openFiles->end())
 		return 0;
 
-	(*openFiles)[fname]->truncate();
+	openFiles->erase(openFiles->find(fname));
+	return 1;
+}
 
-	ClusterNo rootDirCluster = (*openFiles)[fname]->myImpl->filePtr->getRootDirCluster();
-	ClusterNo rootDirEntry = (*openFiles)[fname]->myImpl->filePtr->getRootDirEntry();
-
-	if (FileSystemUtils::emptyRootDirEntry(rootDirCluster, rootDirEntry) == 0)
+char KernelFS::deleteFile(char* fname) {
+	// check if file is open
+	if (openFiles->find(fname) != openFiles->end())
 		return 0;
+
+	// check if file exists
+	if (!doesExist(fname))
+		return 0;
+
+	ClusterNo lvl1IndexCluster, rootDirCluster, rootDirEntry;
+	FileSystemUtils::getFileInfo(fname, &lvl1IndexCluster, &rootDirCluster, &rootDirEntry);
+
+	// this should never happen due to previous check with doesExist()
+	if (rootDirCluster == 0) {
+		std::cout << "error in deleteFile() 1" << std::endl;
+		exit(1);
+	}
+		
+	// file is empty
+	if (lvl1IndexCluster == 0) {
+		if (FileSystemUtils::emptyRootDirEntry(rootDirCluster, rootDirEntry) == 0)
+			return 0;
+		return 1;
+	}
+
+	if (ClusterAllocation::readCluster(lvl1IndexCluster, clusterBuffer) == 0) {
+		std::cout << "error in deleteFile() 2" << std::endl;
+		exit(1);
+	}
+
+	char additionalBuffer[CLUSTER_SIZE];
+
+	ClusterNo* lvl1Ptr, *lvl2Ptr;
+	for (ClusterNo i = 0; i < ENTRIES_PER_INDEX; i++) {
+		lvl1Ptr = (ClusterNo*)clusterBuffer + i;
+
+		if (*lvl1Ptr == 0)
+			continue;
+
+		if (ClusterAllocation::readCluster(*lvl1Ptr, additionalBuffer) == 0) {
+			std::cout << "error in deleteFile() 3" << std::endl;
+			exit(1);
+		}
+
+		for (ClusterNo j = 0; j < ENTRIES_PER_INDEX; j++) {
+			lvl2Ptr = (ClusterNo*)additionalBuffer + j;
+
+			if (*lvl2Ptr == 0)
+				continue;
+
+			if (ClusterAllocation::deallocateCluster(*lvl2Ptr) == 0) {
+				std::cout << "error in deleteFile() 4" << std::endl;
+				exit(1);
+			}
+		}
+
+		if (ClusterAllocation::deallocateCluster(*lvl1Ptr) == 0) {
+			std::cout << "error in deleteFile() 5" << std::endl;
+			exit(1);
+		}
+	}
+	
+	if (ClusterAllocation::deallocateCluster(lvl1IndexCluster) == 0) {
+		std::cout << "error in deleteFile() 6" << std::endl;
+		exit(1);
+	}
+
+	if (FileSystemUtils::emptyRootDirEntry(rootDirCluster, rootDirEntry) == 0) {
+		std::cout << "error in deleteFile() 7" << std::endl;
+		exit(1);
+	}
 
 	return 1;
 }
