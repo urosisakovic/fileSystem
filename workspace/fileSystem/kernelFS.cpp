@@ -278,10 +278,10 @@ File* KernelFS::open(char* fname, char mode) {
 	signal(openCriticSection);
 	if (fileLocksWrite->find(fname) == fileLocksWrite->end()) {
 		(*fileLocksWrite)[fname] = CreateSemaphore(NULL, 0, 1, NULL);
-		std::cout << std::endl << std::endl << "napravljen" << std::endl << std::endl;
+		//std::cout << std::endl << std::endl << "napravljen" << std::endl << std::endl;
 	}
 	else {
-		std::cout << std::endl << std::endl << "wait" << std::endl << std::endl;
+		//std::cout << std::endl << std::endl << "wait" << std::endl << std::endl;
 		wait((*fileLocksWrite)[fname]);
 	}
 
@@ -306,7 +306,7 @@ char KernelFS::close(char* fname) {
 
 	openFiles->erase(openFiles->find(fname));
 
-	std::cout << std::endl << std::endl << "signal" << std::endl << std::endl;
+	//std::cout << std::endl << std::endl << "signal" << std::endl << std::endl;
 	signal((*fileLocksWrite)[fname]);
 
 	if (openFiles->size() == 0)

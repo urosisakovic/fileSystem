@@ -22,8 +22,10 @@ FilePointer::FilePointer(ClusterNo rootDirCluster, ClusterNo rootDirEntry) {
 }
 
 char FilePointer::GoToNextCluster() {
+	//std::cout << "lvl2IndexEntry: " << lvl2IndexEntry << std::endl;
+
 	if (lvl2IndexEntry >= ENTRIES_PER_INDEX) {
-		std::cout << "FilePointer::GoToNextCluster 1" << std::endl;
+		std::cout << "FilePointer::GoToNextCluster 1: " << lvl2IndexEntry << std::endl;
 		exit(1);
 	}
 	if (lvl1IndexEntry >= ENTRIES_PER_INDEX) {

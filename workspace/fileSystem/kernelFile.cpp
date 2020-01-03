@@ -136,7 +136,7 @@ char KernelFile::seek(BytesCnt bytesCnt) {
 	if (bytesCnt >= getFileSize())
 		return 0;
 
-	filePtr->lvl1IndexEntry = bytesCnt / (1 << 22);
+	filePtr->lvl1IndexEntry = bytesCnt / (1 << 20);
 
 	if (ClusterAllocation::readCluster(filePtr->lvl1IndexCluster, clusterBuffer) == 0) {
 		std::cout << "error seek() 1" << std::endl;
@@ -146,7 +146,7 @@ char KernelFile::seek(BytesCnt bytesCnt) {
 	ClusterNo* lvl2IndexClusterPtr = (ClusterNo*)clusterBuffer + filePtr->lvl1IndexEntry;
 	filePtr->lvl2IndexCluster = *lvl2IndexClusterPtr;
 
-	bytesCnt -= filePtr->lvl1IndexEntry * (1 << 22);
+	bytesCnt -= filePtr->lvl1IndexEntry * (1 << 20);
 
 	filePtr->lvl2IndexEntry = bytesCnt / (1 << 11);;
 

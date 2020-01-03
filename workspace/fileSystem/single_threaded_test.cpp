@@ -1,7 +1,7 @@
 #include "testprimer.h"
 
-using namespace std;
-
+//using namespace std;
+//
 //HANDLE nit1, nit2;
 //DWORD ThreadID;
 //
@@ -16,7 +16,7 @@ using namespace std;
 //int ulazSize;
 
 
-int STmain() {
+int STMain() {
 	clock_t startTime, endTime;
 	cout << "Pocetak testa!" << endl;
 	startTime = clock(); //pocni merenje vremenas
@@ -35,7 +35,7 @@ int STmain() {
 
 
 	wait(mutex);
-	partition = new Partition((char*)"p1.ini");
+	partition = new Partition((char*)"p2.ini");
 	signal(mutex);
 
 	wait(mutex);
