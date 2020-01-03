@@ -1,3 +1,18 @@
-﻿  clusterAllocation.cpp
-C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\clusterAllocation.cpp(187,20): warning C4018: '<': signed/unsigned mismatch
+﻿  FileSystemUtils.cpp
+  OpenAppend.cpp
+  OpenFileStrategy.cpp
+  OpenRead.cpp
+  OpenWrite.cpp
+  clusterAllocation.cpp
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\clusterAllocation.cpp(139,20): warning C4018: '<': signed/unsigned mismatch
+  file.cpp
+  fileptr.cpp
+  fs.cpp
+  kernelFS.cpp
+  kernelFile.cpp
+  main.cpp
+  nit1.cpp
+  nit2.cpp
+  single_threaded_test.cpp
+  Generating Code...
   fileSystem.vcxproj -> C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\Debug\fileSystem.exe

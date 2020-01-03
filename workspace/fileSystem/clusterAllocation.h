@@ -24,6 +24,8 @@ public:
     static void setPartition(Partition*);   // TODO: remove all cached data
     static void setBitVector(unsigned, char*);
 
+    static void updateCache(ClusterNo, bool);
+
     static long freeClustersCount();
 private:
     class CacheNode {

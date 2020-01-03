@@ -10,12 +10,11 @@ std::unordered_map<ClusterNo, ClusterAllocation::CacheNode*>* ClusterAllocation:
 unsigned ClusterAllocation::cacheSize = 0;
 unsigned ClusterAllocation::maxCacheSize = 0;
 
-// TODO: Optimize this to avoid unncessery (de)allocation but to reuse nodes
-int ClusterAllocation::readCluster(ClusterNo cluster, char* buffer) {
+void ClusterAllocation::updateCache(ClusterNo cluster, bool read) {
 	if (cachedMap->find(cluster) == cachedMap->end()) {
 		CacheNode* ch = new CacheNode(cluster);
-		if (partition->readCluster(cluster, ch->cachedCluster) == 0)
-			return 0;
+		if (read)
+			partition->readCluster(cluster, ch->cachedCluster);
 
 		if (cacheSize == maxCacheSize) {
 			CacheNode* delNode = tail;
@@ -43,87 +42,40 @@ int ClusterAllocation::readCluster(ClusterNo cluster, char* buffer) {
 		(*cachedMap)[cluster] = ch;
 		cacheSize++;
 	}
-	
-	CacheNode* ch = (*cachedMap)[cluster];
+	else {
+		CacheNode* ch = (*cachedMap)[cluster];
 
-	if (ch != head) {
-		if (ch->next != nullptr) {
-			(ch->next)->prev = ch->prev;
-		}
-		if (ch->prev != nullptr) {
-			(ch->prev)->next = ch->next;
-		}
+		if (ch != head) {
+			if (ch->next != nullptr) {
+				(ch->next)->prev = ch->prev;
+			}
+			if (ch->prev != nullptr) {
+				(ch->prev)->next = ch->next;
+			}
 
-		if (head == nullptr)
-			head = tail = ch;
-		else {
-			ch->next = head;
-			head->prev = ch;
-			head = ch;
+			if (head == nullptr)
+				head = tail = ch;
+			else {
+				ch->next = head;
+				head->prev = ch;
+				head = ch;
+			}
 		}
-
-		(*cachedMap)[cluster] = ch;
-		cacheSize++;
 	}
+}
 
-
-	memcpy(buffer, ch->cachedCluster, CLUSTER_SIZE);
-
+int ClusterAllocation::readCluster(ClusterNo cluster, char* buffer) {
+	updateCache(cluster, true);
+	
+	memcpy(buffer, (*cachedMap)[cluster]->cachedCluster, CLUSTER_SIZE);
 	return 1;
 }
 
-// TODO: Same thing as above. Also, remove this code duplication.
 int ClusterAllocation::writeCluster(ClusterNo cluster, const char* buffer) {
-	if (cachedMap->find(cluster) == cachedMap->end()) {
-		CacheNode* ch = new CacheNode(cluster);
-		if (partition->readCluster(cluster, ch->cachedCluster) == 0)
-			return 0;
+	updateCache(cluster, false);
 
-		if (cacheSize == maxCacheSize) {
-			CacheNode* delNode = tail;
-			tail = tail->prev;
-			if (tail == nullptr)
-				head = nullptr;
-
-			cachedMap->erase(cachedMap->find(delNode->cluster));
-			if (delNode->changed)
-				partition->writeCluster(delNode->cluster, delNode->cachedCluster);
-
-			delete delNode;
-
-			cacheSize--;
-		}
-
-		ch->next = head;
-		head = ch;
-		if (tail == nullptr)
-			tail = ch;
-
-		(*cachedMap)[cluster] = ch;
-		cacheSize++;
-	}
-
-	CacheNode* ch = (*cachedMap)[cluster];
-
-	if (ch != head) {
-		if (ch->next != nullptr) {
-			(ch->next)->prev = ch->prev;
-		}
-		if (ch->prev != nullptr) {
-			(ch->prev)->next = ch->next;
-		}
-
-		if (ch == tail) {
-			tail = ch->prev;
-		}
-
-		ch->next = head;
-		ch->prev = nullptr;
-		head = ch;
-	}
-
-	ch->changed = true;
-	memcpy(ch->cachedCluster, buffer, CLUSTER_SIZE);
+	(*cachedMap)[cluster]->changed = true;
+	memcpy((*cachedMap)[cluster]->cachedCluster, buffer, CLUSTER_SIZE);
 
 	return 1;
 }
