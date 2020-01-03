@@ -71,6 +71,9 @@ private:
     static HANDLE mountSem;
     static HANDLE unmountSem;
     static HANDLE mutex;
+    static HANDLE openCriticSection;
+    static std::unordered_map<std::string, HANDLE>* fileLocksWrite;
+    static std::unordered_map<std::string, HANDLE>* fileLocksRead;
 
     friend class FileSystemUtils;
 };

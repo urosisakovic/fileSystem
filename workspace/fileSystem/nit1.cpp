@@ -4,7 +4,7 @@ static char threadName[] = "Nit1";
 
 DWORD WINAPI nit1run(){
 	wait(mutex);
-	partition=new Partition((char *)"p1.ini");
+	partition=new Partition((char *)"p2.ini");
 	signal(mutex);
 
 	wait(mutex); 

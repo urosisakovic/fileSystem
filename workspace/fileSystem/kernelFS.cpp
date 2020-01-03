@@ -17,6 +17,11 @@ std::unordered_map<std::string, File*>* KernelFS::openFiles = new std::unordered
 HANDLE KernelFS::mountSem = CreateSemaphore(NULL, 0, 1, NULL);
 HANDLE KernelFS::unmountSem = CreateSemaphore(NULL, 1, 1, NULL);
 HANDLE KernelFS::mutex = CreateSemaphore(NULL, 1, 1, NULL);
+HANDLE KernelFS::openCriticSection = CreateSemaphore(NULL, 1, 1, NULL);
+
+std::unordered_map<std::string, HANDLE>* KernelFS::fileLocksWrite = new std::unordered_map<std::string, HANDLE>();
+std::unordered_map<std::string, HANDLE>* KernelFS::fileLocksRead = new std::unordered_map<std::string, HANDLE>();
+
 
 char KernelFS::mount(Partition* partition) {
 	if (KernelFS::partition != nullptr)
@@ -245,10 +250,11 @@ char KernelFS::doesExist(char* fname) {
 }
 
 File* KernelFS::open(char* fname, char mode) {
-	wait(mutex);
-
-	if (partition == nullptr)
+	wait(openCriticSection);
+	if (partition == nullptr) {
+		signal(openCriticSection);
 		return nullptr;
+	}
 
 	if (mode == 'r')
 		openFile = new OpenRead(fname, rootDirLvl1Index);
@@ -257,16 +263,26 @@ File* KernelFS::open(char* fname, char mode) {
 	else if (mode == 'a')
 		openFile = new OpenAppend(fname, rootDirLvl1Index);
 	else {
-		std::cout << "Invalid mode." << std::endl;
-		exit(1);
+		signal(openCriticSection);
+		return nullptr;
 	}
 
 	File *f = new File();
 	f->myImpl = openFile->open();
 
 	if (f->myImpl == nullptr) {
-		signal(mutex);
+		signal(openCriticSection);
 		return nullptr;
+	}
+
+	signal(openCriticSection);
+	if (fileLocksWrite->find(fname) == fileLocksWrite->end()) {
+		(*fileLocksWrite)[fname] = CreateSemaphore(NULL, 0, 1, NULL);
+		std::cout << std::endl << std::endl << "napravljen" << std::endl << std::endl;
+	}
+	else {
+		std::cout << std::endl << std::endl << "wait" << std::endl << std::endl;
+		wait((*fileLocksWrite)[fname]);
 	}
 
 	f->myImpl->fname = new char[strlen(fname)];
@@ -277,7 +293,6 @@ File* KernelFS::open(char* fname, char mode) {
 
 	(*openFiles)[fname] = f;
 
-	signal(mutex);
 	return f;
 }
 
@@ -290,6 +305,9 @@ char KernelFS::close(char* fname) {
 	}
 
 	openFiles->erase(openFiles->find(fname));
+
+	std::cout << std::endl << std::endl << "signal" << std::endl << std::endl;
+	signal((*fileLocksWrite)[fname]);
 
 	if (openFiles->size() == 0)
 		signal(unmountSem);
