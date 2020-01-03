@@ -17,6 +17,10 @@ int ulazSize;
 
 
 int main() {
+	clock_t startTime, endTime;
+	cout << "Pocetak testa!" << endl;
+	startTime = clock(); //pocni merenje vremenas
+
 	{//ucitavamo ulazni fajl u bafer, da bi nit 1 i 2 mogle paralelno da citaju
 		FILE* f = fopen("ulaz.dat", "rb");
 		if (f == 0) {
@@ -52,6 +56,8 @@ int main() {
 	cout << ": wait 1" << endl;
 	signal(mutex);
 
+	// cout << ClusterAllocation::freeClustersCount() << endl;
+
 	{ //11
 		char filepath[] = "/fajl1.dat";
 
@@ -70,6 +76,8 @@ int main() {
 		cout << ": zatvoren fajl '" << filepath << "'" << endl;
 		signal(mutex);
 	}
+
+	// cout << ClusterAllocation::freeClustersCount() << endl;
 
 	{ // 21
 		File* src, * dst;
@@ -113,6 +121,8 @@ int main() {
 		signal(mutex);
 	}
 
+	// cout << ClusterAllocation::freeClustersCount() << endl;
+
 	{  // 23
 		char filepath[] = "/fajl2.dat";
 		File* f = FS::open(filepath, 'r');
@@ -122,9 +132,6 @@ int main() {
 		signal(mutex);
 
 		ofstream fout("izlaz1.dat", ios::out | ios::binary);
-
-		cout << f->getFileSize() << endl;
-		cout << f->filePos() << endl;
 
 		char* buff = new char[f->getFileSize()];
 		f->read(f->getFileSize(), buff);
@@ -142,6 +149,8 @@ int main() {
 		cout << ": Zatvoren fajl " << filepath << "" << endl;
 		signal(mutex);
 	}
+
+	// cout << ClusterAllocation::freeClustersCount() << endl;
 
 	{ //12
 		File* src, * dst;
@@ -169,8 +178,6 @@ int main() {
 		cout << ": Prepisana druga polovina '" << filepath << "' u '" << filepath1 << "'" << endl;
 		signal(mutex);
 
-		std::cout << dst->getFileSize() << std::endl;
-
 		delete dst;
 		wait(mutex);
 		cout << ": Zatvoren fajl '" << filepath1 << "'" << endl;
@@ -181,6 +188,8 @@ int main() {
 		cout << ": Zatvoren fajl '" << filepath << "'" << endl;
 		signal(mutex);
 	}
+
+	// cout << ClusterAllocation::freeClustersCount() << endl;
 
 	{	// 24
 		char copied_filepath[] = "/fajll5.dat";
@@ -232,6 +241,8 @@ int main() {
 		signal(mutex);
 	}
 
+	// cout << ClusterAllocation::freeClustersCount() << endl;
+
 	{ //13
 		File* src, * dst;
 		char filepath[] = "/fajl25.dat";
@@ -269,6 +280,8 @@ int main() {
 		signal(mutex);
 	}
 
+	// cout << ClusterAllocation::freeClustersCount() << endl;
+
 	{	// 25
 		char filepath[] = "/fajl25.dat";
 
@@ -293,6 +306,8 @@ int main() {
 		signal(mutex);
 	}
 
+	// cout << ClusterAllocation::freeClustersCount() << endl;
+
 	{ // 26
 		FS::unmount();
 		wait(mutex);
@@ -300,5 +315,7 @@ int main() {
 		signal(mutex);
 	}
 
-
+	endTime = clock();
+	cout << "Kraj test primera!" << endl;
+	cout << "Vreme izvrsavanja: " << ((double)(endTime - startTime) / ((double)CLOCKS_PER_SEC / 1000.0)) << "ms!" << endl;
 }
