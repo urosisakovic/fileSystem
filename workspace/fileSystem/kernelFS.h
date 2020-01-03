@@ -1,6 +1,9 @@
 #pragma once
 #include <string.h>
 #include <unordered_map>
+#include<cstdlib>
+#include<windows.h>
+#include<ctime>
 #include <string>
 #include <iostream>
 #include "part.h"
@@ -9,6 +12,9 @@
 #include "kernelFile.h"
 #include "clusterAllocation.h"
 #include "fileptr.h"
+
+#define signal(x) ReleaseSemaphore(x,1,NULL)
+#define wait(x) WaitForSingleObject(x,INFINITE)
 
 class File;
 class KernelFile;
@@ -62,6 +68,8 @@ private:
 
     static OpenFileStrategy* openFile;
 
+    static HANDLE mountSem;
+    static HANDLE allFilesClosedSem;
 
     friend class FileSystemUtils;
 };

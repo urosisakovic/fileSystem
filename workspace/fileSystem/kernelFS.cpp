@@ -3,12 +3,6 @@
 #include "OpenRead.h"
 #include "OpenWrite.h"
 
-// TODO: Check if any readCluster return -1
-// TODO: Use bool instead of char
-// TODO: Use inline functions
-// TODO: Where to close a file?
-// TODO: In case of a failed allocation deallocate all the previously allocated clusters.
-
 // initialize static variables
 Partition* KernelFS::partition = nullptr;
 ClusterNo KernelFS::clusterCount = 0;
@@ -20,9 +14,13 @@ char* KernelFS::clusterBuffer = new char[CLUSTER_SIZE];
 OpenFileStrategy* KernelFS::openFile = nullptr;
 std::unordered_map<std::string, File*>* KernelFS::openFiles = new std::unordered_map<std::string, File*>();
 
-// TODO: If other thread tries to mount that same partition, 
-//		 what should happen?
+HANDLE KernelFS::mountSem = CreateSemaphore(NULL, 0, 1, NULL);
+HANDLE KernelFS::allFilesClosedSem = CreateSemaphore(NULL, 1, 1, NULL);
+
 char KernelFS::mount(Partition* partition) {
+	if (KernelFS::partition != nullptr)
+		wait(mountSem);
+
 	KernelFS::partition = partition;
 
 	ClusterAllocation::setPartition(partition);
@@ -55,18 +53,22 @@ char KernelFS::mount(Partition* partition) {
 }
 
 char KernelFS::unmount() {
-	if (partition == nullptr)
+	wait(allFilesClosedSem);
+	if (partition == nullptr) {
 		return 0;
+	}
 
 	partition = nullptr;
 	delete[] bitVector;
 
+	signal(mountSem);
 	return 1;
 }
 
 char KernelFS::format() {
-	if (!partition)
+	if (!partition) {
 		return 0;
+	}
 
 	// update bit vector in KernelFS object
 	unsigned char allSet = 0;
@@ -153,8 +155,9 @@ FileCnt KernelFS::readRootDir() {
 char KernelFS::doesExist(char* fname) {
 	char* fileName = nullptr, *extension = nullptr;
 	FileSystemUtils::splitFileName(fname, &fileName, &extension);
-	if (fileName == nullptr)
+	if (fileName == nullptr) {
 		return 0;
+	}
 	
 	ClusterNo* lvl1Ptr, * lvl2Ptr;
 	rootDirEntry* fileEntry;
@@ -236,33 +239,43 @@ File* KernelFS::open(char* fname, char mode) {
 	File *f = new File();
 	f->myImpl = openFile->open();
 
-	if (f->myImpl == nullptr)
+	if (f->myImpl == nullptr) {
 		return nullptr;
+	}
 
 	f->myImpl->fname = new char[strlen(fname)];
 	memcpy(f->myImpl->fname, fname, strlen(fname) + 1);
 
+	if (openFiles->size() == 0)
+		wait(allFilesClosedSem);
 	(*openFiles)[fname] = f;
 
 	return f;
 }
 
 char KernelFS::close(char* fname) {
-	if (openFiles->find(fname) == openFiles->end())
+	if (openFiles->find(fname) == openFiles->end()) {
 		return 0;
+	}
 
 	openFiles->erase(openFiles->find(fname));
+
+	if (openFiles->size() == 0)
+		signal(allFilesClosedSem);
+
 	return 1;
 }
 
 char KernelFS::deleteFile(char* fname) {
 	// check if file is open
-	if (openFiles->find(fname) != openFiles->end())
+	if (openFiles->find(fname) != openFiles->end()) {
 		return 0;
+	}
 
 	// check if file exists
-	if (!doesExist(fname))
+	if (!doesExist(fname)) {
 		return 0;
+	}
 
 	ClusterNo lvl1IndexCluster, rootDirCluster, rootDirEntry;
 	FileSystemUtils::getFileInfo(fname, &lvl1IndexCluster, &rootDirCluster, &rootDirEntry);
@@ -275,8 +288,9 @@ char KernelFS::deleteFile(char* fname) {
 		
 	// file is empty
 	if (lvl1IndexCluster == 0) {
-		if (FileSystemUtils::emptyRootDirEntry(rootDirCluster, rootDirEntry) == 0)
+		if (FileSystemUtils::emptyRootDirEntry(rootDirCluster, rootDirEntry) == 0) {
 			return 0;
+		}
 		return 1;
 	}
 

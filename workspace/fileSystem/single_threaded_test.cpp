@@ -16,7 +16,7 @@ char *ulazBuffer;
 int ulazSize;
 
 
-int main() {
+int STmain() {
 	clock_t startTime, endTime;
 	cout << "Pocetak testa!" << endl;
 	startTime = clock(); //pocni merenje vremenas
