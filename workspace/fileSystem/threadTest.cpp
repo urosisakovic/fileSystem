@@ -107,7 +107,7 @@ DWORD WINAPI mojaNit2() {
 	return 0;
 }
 
-int main() {
+int MYmain() {
 	HANDLE nit1,nit2;
 
 	nit1 = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)mojaNit1, NULL, 0, NULL);
@@ -120,4 +120,6 @@ int main() {
 	CloseHandle(mySem12);
 	CloseHandle(cekajNit1);
 	CloseHandle(cekajNit2);
+
+	return 0;
 }

@@ -84,14 +84,12 @@ DWORD WINAPI nit1run(){
 		signal(mutex);
 	}
 
-	// TODO: revert
 	signal(sem12); // signalizira niti 2
 
 	wait(mutex);
 	cout<< threadName << ": wait 2"<<endl;
 	signal(mutex);
 
-	// TODO: revert
 	wait(sem21);//ceka nit1
 
 	{
@@ -131,14 +129,12 @@ DWORD WINAPI nit1run(){
 		signal(mutex);
 	}
 
-	// TODO: revert
 	signal(sem12); // signalizira niti 2
 
 	wait(mutex);
 	cout<< threadName << ": Zavrsena!"<<endl;
 	signal(mutex);
 
-	// TODO: revert
 	signal(semMain);
 	return 0;
 }

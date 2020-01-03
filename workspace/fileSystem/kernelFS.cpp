@@ -16,7 +16,7 @@ std::unordered_map<std::string, File*>* KernelFS::openFiles = new std::unordered
 
 HANDLE KernelFS::mountSem = CreateSemaphore(NULL, 0, 1, NULL);
 HANDLE KernelFS::unmountSem = CreateSemaphore(NULL, 1, 1, NULL);
-HANDLE KernelFS::openSem = CreateSemaphore(NULL, 1, 1, NULL);
+HANDLE KernelFS::mutex = CreateSemaphore(NULL, 1, 1, NULL);
 
 char KernelFS::mount(Partition* partition) {
 	if (KernelFS::partition != nullptr)
@@ -54,12 +54,12 @@ char KernelFS::mount(Partition* partition) {
 }
 
 char KernelFS::unmount() {
-	wait(openSem);
+	wait(mutex);
 	wait(unmountSem);
 
 	if (partition == nullptr) {
 		signal(unmountSem);
-		signal(openSem);
+		signal(mutex);
 		return 0;
 	}
 
@@ -68,17 +68,17 @@ char KernelFS::unmount() {
 
 	signal(mountSem);
 	signal(unmountSem);
-	signal(openSem);
+	signal(mutex);
 	return 1;
 }
 
 char KernelFS::format() {
-	wait(openSem);
+	wait(mutex);
 	wait(unmountSem);
 
 	if (partition == nullptr) {
 		signal(unmountSem);
-		signal(openSem);
+		signal(mutex);
 		return 0;
 	}
 
@@ -110,7 +110,7 @@ char KernelFS::format() {
 	}
 
 	signal(unmountSem);
-	signal(openSem);
+	signal(mutex);
 	return 1;
 }
 
@@ -245,7 +245,7 @@ char KernelFS::doesExist(char* fname) {
 }
 
 File* KernelFS::open(char* fname, char mode) {
-	wait(openSem);
+	wait(mutex);
 
 	if (partition == nullptr)
 		return nullptr;
@@ -265,7 +265,7 @@ File* KernelFS::open(char* fname, char mode) {
 	f->myImpl = openFile->open();
 
 	if (f->myImpl == nullptr) {
-		signal(openSem);
+		signal(mutex);
 		return nullptr;
 	}
 
@@ -277,7 +277,7 @@ File* KernelFS::open(char* fname, char mode) {
 
 	(*openFiles)[fname] = f;
 
-	signal(openSem);
+	signal(mutex);
 	return f;
 }
 
@@ -298,16 +298,21 @@ char KernelFS::close(char* fname) {
 }
 
 char KernelFS::deleteFile(char* fname) {
+	wait(mutex);
+
 	if (partition == nullptr)
+		signal(mutex);
 		return 0;
 
 	// check if file is open
 	if (openFiles->find(fname) != openFiles->end()) {
+		signal(mutex);
 		return 0;
 	}
 
 	// check if file exists
 	if (!doesExist(fname)) {
+		signal(mutex);
 		return 0;
 	}
 
@@ -323,8 +328,10 @@ char KernelFS::deleteFile(char* fname) {
 	// file is empty
 	if (lvl1IndexCluster == 0) {
 		if (FileSystemUtils::emptyRootDirEntry(rootDirCluster, rootDirEntry) == 0) {
+			signal(mutex);
 			return 0;
 		}
+		signal(mutex);
 		return 1;
 	}
 
@@ -375,5 +382,6 @@ char KernelFS::deleteFile(char* fname) {
 		exit(1);
 	}
 
+	signal(mutex);
 	return 1;
 }

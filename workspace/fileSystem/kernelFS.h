@@ -70,7 +70,7 @@ private:
 
     static HANDLE mountSem;
     static HANDLE unmountSem;
-    static HANDLE openSem;
+    static HANDLE mutex;
 
     friend class FileSystemUtils;
 };

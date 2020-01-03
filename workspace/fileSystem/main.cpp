@@ -1,21 +1,21 @@
 #include "testprimer.h"
-//
-//using namespace std;
-//
-//HANDLE nit1,nit2;
-//DWORD ThreadID;
-//
-//HANDLE semMain = CreateSemaphore(NULL, 0, 32, NULL);
-//HANDLE sem12 = CreateSemaphore(NULL, 0, 32, NULL);
-//HANDLE sem21 = CreateSemaphore(NULL, 0, 32, NULL);
-//HANDLE mutex = CreateSemaphore(NULL, 1, 32, NULL);
-//
-//Partition *partition;
-//
-//char *ulazBuffer;
-//int ulazSize;
 
-int originalMain(){
+using namespace std;
+
+HANDLE nit1,nit2;
+DWORD ThreadID;
+
+HANDLE semMain = CreateSemaphore(NULL, 0, 32, NULL);
+HANDLE sem12 = CreateSemaphore(NULL, 0, 32, NULL);
+HANDLE sem21 = CreateSemaphore(NULL, 0, 32, NULL);
+HANDLE mutex = CreateSemaphore(NULL, 1, 32, NULL);
+
+Partition *partition;
+
+char *ulazBuffer;
+int ulazSize;
+
+int main(){
 	clock_t startTime, endTime;
 	cout << "Pocetak testa!" << endl;
 	startTime = clock(); //pocni merenje vremena

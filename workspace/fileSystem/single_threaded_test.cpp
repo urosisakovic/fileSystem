@@ -2,18 +2,18 @@
 
 using namespace std;
 
-HANDLE nit1, nit2;
-DWORD ThreadID;
-
-HANDLE semMain = CreateSemaphore(NULL, 0, 32, NULL);
-HANDLE sem12 = CreateSemaphore(NULL, 0, 32, NULL);
-HANDLE sem21 = CreateSemaphore(NULL, 0, 32, NULL);
-HANDLE mutex = CreateSemaphore(NULL, 1, 32, NULL);
-
-Partition* partition;
-
-char *ulazBuffer;
-int ulazSize;
+//HANDLE nit1, nit2;
+//DWORD ThreadID;
+//
+//HANDLE semMain = CreateSemaphore(NULL, 0, 32, NULL);
+//HANDLE sem12 = CreateSemaphore(NULL, 0, 32, NULL);
+//HANDLE sem21 = CreateSemaphore(NULL, 0, 32, NULL);
+//HANDLE mutex = CreateSemaphore(NULL, 1, 32, NULL);
+//
+//Partition* partition;
+//
+//char *ulazBuffer;
+//int ulazSize;
 
 
 int STmain() {
@@ -318,4 +318,6 @@ int STmain() {
 	endTime = clock();
 	cout << "Kraj test primera!" << endl;
 	cout << "Vreme izvrsavanja: " << ((double)(endTime - startTime) / ((double)CLOCKS_PER_SEC / 1000.0)) << "ms!" << endl;
+
+	return 0;
 }
