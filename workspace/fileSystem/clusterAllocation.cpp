@@ -122,6 +122,7 @@ int ClusterAllocation::writeCluster(ClusterNo cluster, const char* buffer) {
 		head = ch;
 	}
 
+	ch->changed = true;
 	memcpy(ch->cachedCluster, buffer, CLUSTER_SIZE);
 
 	return 1;
@@ -157,6 +158,9 @@ void ClusterAllocation::setPartition(Partition* p) {
 		delNode = itr;
 		itr = itr->next;
 	
+		if (delNode->changed)
+			partition->writeCluster(delNode->cluster, delNode->cachedCluster);
+
 		cachedMap->erase(cachedMap->find(delNode->cluster));
 		delete delNode;
 	}
