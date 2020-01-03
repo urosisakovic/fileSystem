@@ -1,4 +1,3 @@
-﻿  main.cpp
-  single_threaded_test.cpp
-  Generating Code...
+﻿  clusterAllocation.cpp
+C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\clusterAllocation.cpp(183,20): warning C4018: '<': signed/unsigned mismatch
   fileSystem.vcxproj -> C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\Debug\fileSystem.exe

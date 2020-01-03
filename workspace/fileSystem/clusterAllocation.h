@@ -3,6 +3,7 @@
 #include "part.h"
 #include <cstring>
 #include <iostream>
+#include <unordered_map>
 
 class ClusterAllocation {
 public:
@@ -20,11 +21,33 @@ public:
     // returns 1 if cluster is allocated, 0 if it is free and -1 in case of an error
     static char checkAllocated(ClusterNo);
 
-    static void setPartition(Partition*);
+    static void setPartition(Partition*);   // TODO: remove all cached data
     static void setBitVector(unsigned, char*);
 
     static long freeClustersCount();
 private:
+    class CacheNode {
+    public:
+        char* cachedCluster;
+        CacheNode *next, *prev;
+        ClusterNo cluster;
+        bool changed;
+
+        CacheNode(ClusterNo cl) :
+            cluster(cl), next(nullptr), prev(nullptr), changed(false) {
+            cachedCluster = new char[CLUSTER_SIZE];
+        }
+
+        ~CacheNode() {
+            delete[] cachedCluster;
+        }
+    };
+
+    static CacheNode* head, *tail;
+    static std::unordered_map<ClusterNo, CacheNode*> *cachedMap;
+    static unsigned cacheSize;
+    static unsigned maxCacheSize;
+
     static Partition* partition;
     static char* bitVector;
     static unsigned bitVectorByteSize;
