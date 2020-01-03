@@ -69,7 +69,8 @@ private:
     static OpenFileStrategy* openFile;
 
     static HANDLE mountSem;
-    static HANDLE allFilesClosedSem;
+    static HANDLE unmountSem;
+    static HANDLE openSem;
 
     friend class FileSystemUtils;
 };

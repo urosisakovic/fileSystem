@@ -15,7 +15,8 @@ OpenFileStrategy* KernelFS::openFile = nullptr;
 std::unordered_map<std::string, File*>* KernelFS::openFiles = new std::unordered_map<std::string, File*>();
 
 HANDLE KernelFS::mountSem = CreateSemaphore(NULL, 0, 1, NULL);
-HANDLE KernelFS::allFilesClosedSem = CreateSemaphore(NULL, 1, 1, NULL);
+HANDLE KernelFS::unmountSem = CreateSemaphore(NULL, 1, 1, NULL);
+HANDLE KernelFS::openSem = CreateSemaphore(NULL, 1, 1, NULL);
 
 char KernelFS::mount(Partition* partition) {
 	if (KernelFS::partition != nullptr)
@@ -53,8 +54,12 @@ char KernelFS::mount(Partition* partition) {
 }
 
 char KernelFS::unmount() {
-	wait(allFilesClosedSem);
+	wait(openSem);
+	wait(unmountSem);
+
 	if (partition == nullptr) {
+		signal(unmountSem);
+		signal(openSem);
 		return 0;
 	}
 
@@ -62,11 +67,18 @@ char KernelFS::unmount() {
 	delete[] bitVector;
 
 	signal(mountSem);
+	signal(unmountSem);
+	signal(openSem);
 	return 1;
 }
 
 char KernelFS::format() {
-	if (!partition) {
+	wait(openSem);
+	wait(unmountSem);
+
+	if (partition == nullptr) {
+		signal(unmountSem);
+		signal(openSem);
 		return 0;
 	}
 
@@ -97,10 +109,15 @@ char KernelFS::format() {
 		exit(1);
 	}
 
+	signal(unmountSem);
+	signal(openSem);
 	return 1;
 }
 
 FileCnt KernelFS::readRootDir() {
+	if (partition != nullptr)
+		return -1;
+
 	FileCnt fileCnt = 0;
 
 	ClusterNo *lvl1Ptr, *lvl2Ptr;
@@ -153,6 +170,9 @@ FileCnt KernelFS::readRootDir() {
 }
 
 char KernelFS::doesExist(char* fname) {
+	if (partition == nullptr)
+		return 0;
+
 	char* fileName = nullptr, *extension = nullptr;
 	FileSystemUtils::splitFileName(fname, &fileName, &extension);
 	if (fileName == nullptr) {
@@ -225,6 +245,11 @@ char KernelFS::doesExist(char* fname) {
 }
 
 File* KernelFS::open(char* fname, char mode) {
+	wait(openSem);
+
+	if (partition == nullptr)
+		return nullptr;
+
 	if (mode == 'r')
 		openFile = new OpenRead(fname, rootDirLvl1Index);
 	else if (mode == 'w')
@@ -240,6 +265,7 @@ File* KernelFS::open(char* fname, char mode) {
 	f->myImpl = openFile->open();
 
 	if (f->myImpl == nullptr) {
+		signal(openSem);
 		return nullptr;
 	}
 
@@ -247,13 +273,18 @@ File* KernelFS::open(char* fname, char mode) {
 	memcpy(f->myImpl->fname, fname, strlen(fname) + 1);
 
 	if (openFiles->size() == 0)
-		wait(allFilesClosedSem);
+		wait(unmountSem);
+
 	(*openFiles)[fname] = f;
 
+	signal(openSem);
 	return f;
 }
 
 char KernelFS::close(char* fname) {
+	if (partition == nullptr)
+		return 0;
+
 	if (openFiles->find(fname) == openFiles->end()) {
 		return 0;
 	}
@@ -261,12 +292,15 @@ char KernelFS::close(char* fname) {
 	openFiles->erase(openFiles->find(fname));
 
 	if (openFiles->size() == 0)
-		signal(allFilesClosedSem);
+		signal(unmountSem);
 
 	return 1;
 }
 
 char KernelFS::deleteFile(char* fname) {
+	if (partition == nullptr)
+		return 0;
+
 	// check if file is open
 	if (openFiles->find(fname) != openFiles->end()) {
 		return 0;

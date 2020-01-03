@@ -14,11 +14,13 @@ using namespace std;
 
 HANDLE myMutex = CreateSemaphore(NULL, 1, 32, NULL);
 HANDLE mySem12 = CreateSemaphore(NULL, 0, 32, NULL);
+HANDLE mySem21 = CreateSemaphore(NULL, 0, 32, NULL);
 
 HANDLE cekajNit1 = CreateSemaphore(NULL, 0, 32, NULL);
 HANDLE cekajNit2 = CreateSemaphore(NULL, 0, 32, NULL);
 
 static Partition* partition;
+static File* uros, * viki, * mama, * tata;
 
 DWORD WINAPI mojaNit1() {
 	wait(myMutex);
@@ -41,15 +43,33 @@ DWORD WINAPI mojaNit1() {
 
 	signal(mySem12);
 
-	Sleep(10000);
+	Sleep(5000);
 
 	FS::unmount();
 	wait(myMutex);
 	cout << ": Demontirana particija nit1" << endl;
 	signal(myMutex);
 
-	signal(cekajNit1);
+	wait(myMutex);
+	cout << "nit1 ceka" << endl;
+	signal(myMutex);
 
+	wait(mySem21);
+	wait(myMutex);
+	cout << "nit1 krenula" << endl;
+	signal(myMutex);
+
+	Sleep(5000);
+	wait(myMutex);
+	cout << "Brisem fajlove nit1" << endl;
+	signal(myMutex);
+
+	delete uros;
+	delete viki;
+	delete mama;
+	delete tata;
+
+	signal(cekajNit1);
 	return 0;
 }
 
@@ -68,8 +88,22 @@ DWORD WINAPI mojaNit2() {
 	cout << ": Formatirana particija nit2" << endl;
 	signal(myMutex);
 
-	signal(cekajNit2);
+	uros = FS::open((char*)"uros.txt", 'w');
+	viki = FS::open((char*)"viki.txt", 'w');
+	mama = FS::open((char*)"mama.txt", 'w');
+	tata = FS::open((char*)"tata.txt", 'w');
+	wait(myMutex);
+	cout << "Krenirala fajlove nit2" << endl;
+	signal(myMutex);
 
+	signal(mySem21);
+
+	FS::format();
+	wait(myMutex);
+	cout << ": Demontirana particija nit2" << endl;
+	signal(myMutex);
+
+	signal(cekajNit2);
 	return 0;
 }
 
