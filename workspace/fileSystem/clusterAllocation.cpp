@@ -10,6 +10,9 @@ std::unordered_map<ClusterNo, ClusterAllocation::CacheNode*>* ClusterAllocation:
 unsigned ClusterAllocation::cacheSize = 0;
 unsigned ClusterAllocation::maxCacheSize = 0;
 
+HANDLE ClusterAllocation::allocationMutex = CreateSemaphore(NULL, 1, 32, NULL);
+HANDLE ClusterAllocation::clusterMutex = CreateSemaphore(NULL, 1, 32, NULL);
+
 void ClusterAllocation::updateCache(ClusterNo cluster, bool read) {
 	if (cachedMap->find(cluster) == cachedMap->end()) {
 		CacheNode* ch = new CacheNode(cluster);
@@ -65,17 +68,21 @@ void ClusterAllocation::updateCache(ClusterNo cluster, bool read) {
 }
 
 int ClusterAllocation::readCluster(ClusterNo cluster, char* buffer) {
+	wait(allocationMutex);
 	updateCache(cluster, true);
 	
 	memcpy(buffer, (*cachedMap)[cluster]->cachedCluster, CLUSTER_SIZE);
+	signal(allocationMutex);
 	return 1;
 }
 
 int ClusterAllocation::writeCluster(ClusterNo cluster, const char* buffer) {
+	wait(allocationMutex);
 	updateCache(cluster, false);
 
 	(*cachedMap)[cluster]->changed = true;
 	memcpy((*cachedMap)[cluster]->cachedCluster, buffer, CLUSTER_SIZE);
+	signal(allocationMutex);
 
 	return 1;
 }
@@ -133,38 +140,34 @@ void ClusterAllocation::setBitVector(unsigned bVSize, char* bV) {
 	memcpy(bitVector, bV, bVSize);
 }
 
-long ClusterAllocation::freeClustersCount() {
-	long cnt = 0;
-
-	for (int i = 0; i < clusterCount; i++)
-		if (!checkAllocated(i))
-			cnt++;
-
-	return cnt;
-}
-
 ClusterNo ClusterAllocation::allocateCluster() {
+	wait(clusterMutex);
 	char clusterBuffer[CLUSTER_SIZE];
 
 	for (ClusterNo i = 0; i < clusterCount; i++) {
 		if (!checkAllocated(i)) {
 			markAllocated(i);
-			// std::cout << "Allocated cluster: " << i << std::endl;
 			memset(clusterBuffer, 0, CLUSTER_SIZE);
 			writeCluster(i, clusterBuffer);
-
+			signal(clusterMutex);
 			return i;
 		}
 	}
 
+
 	std::cout << "CANNOT ALLOCATE CLUSTER." << std::endl;
+	signal(clusterMutex);
 	return 0;
 }
 
 char ClusterAllocation::deallocateCluster(ClusterNo freeClusterIdx) {
-	if (!checkAllocated(freeClusterIdx))
+	wait(clusterMutex);
+	if (!checkAllocated(freeClusterIdx)) {
+		signal(clusterMutex);
 		return 0;
+	}
 
 	markDeallocated(freeClusterIdx);
+	signal(clusterMutex);
 	return 1;
 }

@@ -4,6 +4,12 @@
 #include <cstring>
 #include <iostream>
 #include <unordered_map>
+#include<cstdlib>
+#include<windows.h>
+#include<ctime>
+
+#define signal(x) ReleaseSemaphore(x,1,NULL)
+#define wait(x) WaitForSingleObject(x,INFINITE)
 
 class ClusterAllocation {
 public:
@@ -54,5 +60,8 @@ private:
     static char* bitVector;
     static unsigned bitVectorByteSize;
     static unsigned clusterCount;
+
+    static HANDLE allocationMutex;
+    static HANDLE clusterMutex;
 };
 
