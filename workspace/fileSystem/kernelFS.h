@@ -41,8 +41,14 @@ public:
 
     static char deleteFile(char* fname);
 
-    static void enterCriticSection() { wait(fsMutex); std::cout << "WAIT" << std::endl; }
-    static void exitCriticSection() { std::cout << "SIGNAL" << std::endl;  signal(fsMutex); }
+    static void enterCriticSection() { 
+        wait(fsMutex); 
+        // std::cout << "WAIT" << std::endl; 
+    }
+    static void exitCriticSection() { 
+        // std::cout << "SIGNAL" << std::endl;  
+        signal(fsMutex); 
+    }
     static void aquireFile(char* fname);
     static void releaseFile(char* fname);
 private:
@@ -73,6 +79,7 @@ private:
     static OpenFileStrategy* openFile;
 
     static HANDLE fsMutex;
+    static HANDLE aquireMutex;
     static std::unordered_map<std::string, HANDLE>* fileLocks;
 
     friend class FileSystemUtils;

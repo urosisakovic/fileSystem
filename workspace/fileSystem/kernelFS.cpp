@@ -15,6 +15,7 @@ OpenFileStrategy* KernelFS::openFile = nullptr;
 std::unordered_map<std::string, File*>* KernelFS::openFiles = new std::unordered_map<std::string, File*>();
 
 HANDLE KernelFS::fsMutex = CreateSemaphore(NULL, 1, 32, NULL);
+HANDLE KernelFS::aquireMutex = CreateSemaphore(NULL, 1, 32, NULL);
 std::unordered_map<std::string, HANDLE>* KernelFS::fileLocks = new std::unordered_map<std::string, HANDLE>();
 
 char KernelFS::mount(Partition* partition) {
@@ -96,7 +97,7 @@ char KernelFS::format() {
 }
 
 FileCnt KernelFS::readRootDir() {
-	if (partition != nullptr)
+	if (partition == nullptr)
 		return -1;
 
 	FileCnt fileCnt = 0;
@@ -117,6 +118,8 @@ FileCnt KernelFS::readRootDir() {
 
 		if (*lvl1Ptr == 0)
 			continue;
+
+		std::cout << *lvl1Ptr << std::endl;
 
 		if (ClusterAllocation::readCluster((*lvl1Ptr), lvl2Buffer) == 0) {
 			std::cout << "error in readRootDir() 2" << std::endl;
@@ -351,16 +354,20 @@ char KernelFS::deleteFile(char* fname) {
 }
 
 void KernelFS::aquireFile(char* fname) {
-	std::cout << "aquire: " << fname << std::endl;
+	//std::cout << "aquire: " << fname << std::endl;
 	
-	if (fileLocks->find(fname) == fileLocks->end())
-		(*fileLocks)[fname] = CreateSemaphore(NULL, 1, 32, NULL);
+	if (fileLocks->find(fname) == fileLocks->end()) {
+		wait(aquireMutex);
+		if (fileLocks->find(fname) == fileLocks->end())
+			(*fileLocks)[fname] = CreateSemaphore(NULL, 1, 32, NULL);
+		signal(aquireMutex);
+	}
 	
 	wait((*fileLocks)[fname]);
 }
 
 void KernelFS::releaseFile(char* fname) {
-	std::cout << "release: " << fname << std::endl;
+	//std::cout << "release: " << fname << std::endl;
 
 	if (fileLocks->find(fname) != fileLocks->end())
 		signal((*fileLocks)[fname]);
