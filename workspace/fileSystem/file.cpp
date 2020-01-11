@@ -1,6 +1,9 @@
 #include "file.h"
 
 File::~File() {
+	KernelFS::enterCriticSection();
+	KernelFS::releaseFile(myImpl->fname);
+	KernelFS::exitCriticSection();
 	delete myImpl;
 }
 

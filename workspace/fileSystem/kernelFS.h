@@ -41,6 +41,10 @@ public:
 
     static char deleteFile(char* fname);
 
+    static void enterCriticSection() { wait(fsMutex); std::cout << "WAIT" << std::endl; }
+    static void exitCriticSection() { std::cout << "SIGNAL" << std::endl;  signal(fsMutex); }
+    static void aquireFile(char* fname);
+    static void releaseFile(char* fname);
 private:
     // pointer to a Partition object which abstracts
     // Windows 10 x64 API towards hard disk
@@ -68,13 +72,11 @@ private:
 
     static OpenFileStrategy* openFile;
 
-    static HANDLE mountSem;
-    static HANDLE unmountSem;
-    static HANDLE mutex;
-    static HANDLE openCriticSection;
-    static std::unordered_map<std::string, HANDLE>* fileLocksWrite;
-    static std::unordered_map<std::string, HANDLE>* fileLocksRead;
+    static HANDLE fsMutex;
+    static std::unordered_map<std::string, HANDLE>* fileLocks;
 
     friend class FileSystemUtils;
+    friend class FS;
+    friend class File;
 };
 

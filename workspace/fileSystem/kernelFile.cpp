@@ -9,7 +9,9 @@ KernelFile::KernelFile(ClusterNo rootDirCluster, ClusterNo rootDirEntry, bool ca
 }
 
 KernelFile::~KernelFile() {
+	KernelFS::enterCriticSection();
 	KernelFS::close(fname);
+	KernelFS::exitCriticSection();
 	delete filePtr;
 	delete[] clusterBuffer;
 }

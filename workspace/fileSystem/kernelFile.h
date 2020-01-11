@@ -29,5 +29,6 @@ private:
 	char* fname;
 
 	friend class KernelFS;
+	friend class File;
 };
 

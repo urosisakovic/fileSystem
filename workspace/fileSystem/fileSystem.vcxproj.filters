@@ -101,11 +101,5 @@
     <ClCompile Include="nit2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="single_threaded_test.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="threadTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

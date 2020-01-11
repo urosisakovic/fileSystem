@@ -3,7 +3,6 @@
 #include "kernelFS.h"
 #include "clusterAllocation.h"
 
-
 class KernelFile;
 
 class File {

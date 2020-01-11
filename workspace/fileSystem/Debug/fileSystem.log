@@ -1,18 +1,2 @@
-﻿  FileSystemUtils.cpp
-  OpenAppend.cpp
-  OpenFileStrategy.cpp
-  OpenRead.cpp
-  OpenWrite.cpp
-  clusterAllocation.cpp
-  file.cpp
-  fileptr.cpp
-  fs.cpp
-  kernelFS.cpp
-  kernelFile.cpp
-  main.cpp
-  nit1.cpp
-  nit2.cpp
-  single_threaded_test.cpp
-  threadTest.cpp
-  Generating Code...
+﻿  kernelFS.cpp
   fileSystem.vcxproj -> C:\Users\tatjanai\Desktop\uros\os2_hw\fileSystem\workspace\fileSystem\Debug\fileSystem.exe
