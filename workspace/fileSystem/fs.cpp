@@ -3,35 +3,70 @@
 KernelFS* FS::myImpl = new KernelFS();
 
 FS::~FS() {
+	KernelFS::enterCS();
 	delete myImpl;
+	KernelFS::exitCS();
 }
 
 char FS::mount(Partition* partition) {
-	return KernelFS::mount(partition);
+	KernelFS::enterCS();
+	char ret = KernelFS::mount(partition);
+	KernelFS::exitCS();
+
+	return ret;
 }
 
 char FS::unmount() {
-	return KernelFS::unmount();
+	KernelFS::enterCS();
+	char ret = KernelFS::unmount();
+	KernelFS::exitCS();
+
+	return ret;
 }
 
 char FS::format() {
-	return KernelFS::format();
+	KernelFS::enterCS();
+	char ret = KernelFS::format();
+	KernelFS::exitCS();
+
+	return ret;
 }
 
+
 FileCnt FS::readRootDir() {
-	return KernelFS::readRootDir();
+	KernelFS::enterCS();
+	FileCnt ret = KernelFS::readRootDir();
+	KernelFS::exitCS();
+
+	return ret;
 }
 
 char FS::doesExist(char* fname) {
-	return KernelFS::doesExist(fname);
+	KernelFS::enterCS();
+	char ret = KernelFS::doesExist(fname);
+	KernelFS::exitCS();
+
+	return ret;
 }
 
 File* FS::open(char* fname, char mode) {
-	return KernelFS::open(fname, mode);
+	KernelFS::aquireFile(fname);
+
+	KernelFS::enterCS();
+	File *ret = KernelFS::open(fname, mode);
+	if (ret == nullptr)
+		KernelFS::releaseFile(fname);
+	KernelFS::exitCS();
+
+	return ret;
 }
 
 char FS::deleteFile(char* fname) {
-	return KernelFS::deleteFile(fname);
+	KernelFS::enterCS();
+	char ret = KernelFS::deleteFile(fname);
+	KernelFS::exitCS();
+
+	return ret;
 }
 
 FS::FS() {

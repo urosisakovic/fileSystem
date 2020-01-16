@@ -14,18 +14,14 @@ char* KernelFS::clusterBuffer = new char[CLUSTER_SIZE];
 OpenFileStrategy* KernelFS::openFile = nullptr;
 std::unordered_map<std::string, File*>* KernelFS::openFiles = new std::unordered_map<std::string, File*>();
 
-HANDLE KernelFS::mountSem = CreateSemaphore(NULL, 0, 1, NULL);
-HANDLE KernelFS::unmountSem = CreateSemaphore(NULL, 1, 1, NULL);
-HANDLE KernelFS::mutex = CreateSemaphore(NULL, 1, 1, NULL);
-HANDLE KernelFS::openCriticSection = CreateSemaphore(NULL, 1, 1, NULL);
-
-std::unordered_map<std::string, HANDLE>* KernelFS::fileLocksWrite = new std::unordered_map<std::string, HANDLE>();
-std::unordered_map<std::string, HANDLE>* KernelFS::fileLocksRead = new std::unordered_map<std::string, HANDLE>();
+HANDLE KernelFS::mutex = CreateSemaphore(NULL, 1, 32, NULL);
+HANDLE KernelFS::aquireLock = CreateSemaphore(NULL, 1, 32, NULL);
+std::unordered_map<std::string, HANDLE>* KernelFS::fileLocks = new std::unordered_map<std::string, HANDLE>();
 
 
 char KernelFS::mount(Partition* partition) {
 	if (KernelFS::partition != nullptr)
-		wait(mountSem);
+		return 0;
 
 	KernelFS::partition = partition;
 
@@ -59,31 +55,19 @@ char KernelFS::mount(Partition* partition) {
 }
 
 char KernelFS::unmount() {
-	wait(mutex);
-	wait(unmountSem);
-
 	if (partition == nullptr) {
-		signal(unmountSem);
-		signal(mutex);
 		return 0;
 	}
 
 	partition = nullptr;
 	delete[] bitVector;
 
-	signal(mountSem);
-	signal(unmountSem);
-	signal(mutex);
 	return 1;
 }
 
 char KernelFS::format() {
-	wait(mutex);
-	wait(unmountSem);
 
 	if (partition == nullptr) {
-		signal(unmountSem);
-		signal(mutex);
 		return 0;
 	}
 
@@ -114,13 +98,11 @@ char KernelFS::format() {
 		exit(1);
 	}
 
-	signal(unmountSem);
-	signal(mutex);
 	return 1;
 }
 
 FileCnt KernelFS::readRootDir() {
-	if (partition != nullptr)
+	if (partition == nullptr)
 		return -1;
 
 	FileCnt fileCnt = 0;
@@ -250,9 +232,7 @@ char KernelFS::doesExist(char* fname) {
 }
 
 File* KernelFS::open(char* fname, char mode) {
-	wait(openCriticSection);
 	if (partition == nullptr) {
-		signal(openCriticSection);
 		return nullptr;
 	}
 
@@ -263,7 +243,6 @@ File* KernelFS::open(char* fname, char mode) {
 	else if (mode == 'a')
 		openFile = new OpenAppend(fname, rootDirLvl1Index);
 	else {
-		signal(openCriticSection);
 		return nullptr;
 	}
 
@@ -271,25 +250,11 @@ File* KernelFS::open(char* fname, char mode) {
 	f->myImpl = openFile->open();
 
 	if (f->myImpl == nullptr) {
-		signal(openCriticSection);
 		return nullptr;
-	}
-
-	signal(openCriticSection);
-	if (fileLocksWrite->find(fname) == fileLocksWrite->end()) {
-		(*fileLocksWrite)[fname] = CreateSemaphore(NULL, 0, 1, NULL);
-		//std::cout << std::endl << std::endl << "napravljen" << std::endl << std::endl;
-	}
-	else {
-		//std::cout << std::endl << std::endl << "wait" << std::endl << std::endl;
-		wait((*fileLocksWrite)[fname]);
 	}
 
 	f->myImpl->fname = new char[strlen(fname)];
 	memcpy(f->myImpl->fname, fname, strlen(fname) + 1);
-
-	if (openFiles->size() == 0)
-		wait(unmountSem);
 
 	(*openFiles)[fname] = f;
 
@@ -306,33 +271,20 @@ char KernelFS::close(char* fname) {
 
 	openFiles->erase(openFiles->find(fname));
 
-	//std::cout << std::endl << std::endl << "signal" << std::endl << std::endl;
-	signal((*fileLocksWrite)[fname]);
-
-	if (openFiles->size() == 0)
-		signal(unmountSem);
-
 	return 1;
 }
 
 char KernelFS::deleteFile(char* fname) {
-	wait(mutex);
-
 	if (partition == nullptr)
-		signal(mutex);
 		return 0;
 
 	// check if file is open
-	if (openFiles->find(fname) != openFiles->end()) {
-		signal(mutex);
+	if (openFiles->find(fname) != openFiles->end())
 		return 0;
-	}
 
 	// check if file exists
-	if (!doesExist(fname)) {
-		signal(mutex);
+	if (!doesExist(fname))
 		return 0;
-	}
 
 	ClusterNo lvl1IndexCluster, rootDirCluster, rootDirEntry;
 	FileSystemUtils::getFileInfo(fname, &lvl1IndexCluster, &rootDirCluster, &rootDirEntry);
@@ -345,11 +297,9 @@ char KernelFS::deleteFile(char* fname) {
 		
 	// file is empty
 	if (lvl1IndexCluster == 0) {
-		if (FileSystemUtils::emptyRootDirEntry(rootDirCluster, rootDirEntry) == 0) {
-			signal(mutex);
+		if (FileSystemUtils::emptyRootDirEntry(rootDirCluster, rootDirEntry) == 0)
 			return 0;
-		}
-		signal(mutex);
+
 		return 1;
 	}
 
@@ -400,6 +350,27 @@ char KernelFS::deleteFile(char* fname) {
 		exit(1);
 	}
 
-	signal(mutex);
 	return 1;
+}
+
+void KernelFS::aquireFile(char *fname) {
+	if (fileLocks->find(fname) == fileLocks->end()) {
+		wait(aquireLock);
+		if (fileLocks->find(fname) == fileLocks->end()) {
+			(*fileLocks)[fname] = CreateSemaphore(NULL, 1, 32, NULL);
+		}
+		signal(aquireLock);
+	}
+
+	wait((*fileLocks)[fname]);
+}
+
+void KernelFS::releaseFile(char *fname) {
+	if (fileLocks->find(fname) != fileLocks->end()) {
+		signal((*fileLocks)[fname]);
+	}
+	else {
+		std::cout << "realeaseFile error" << std::endl;
+		exit(1);
+	}
 }

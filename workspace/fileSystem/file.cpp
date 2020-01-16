@@ -1,7 +1,10 @@
 #include "file.h"
 
 File::~File() {
+	KernelFS::enterCS();
+	KernelFS::releaseFile(myImpl->fname);
 	delete myImpl;
+	KernelFS::exitCS();
 }
 
 char File::write(BytesCnt bytesCnt, char* buffer) {
